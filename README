@@ -1,0 +1,10 @@
+From here, you can put your custom values for this extension.
+Availiable Options are,
+pool_capacity, spawn_timeout, spawn_probability
+pool_capacity: Capacity of pool. If no availiable pellet in pool, no pellet
+				spawn unless some of previous pellets are recycled.
+spawn_timeout: How frequently it try to spawn pellet - lesser will be more
+				frequently ( in millisecond ).
+spawn_probability: Probability of spawning a pellet. ( from 0 to 1 )
+
+After you add these parameters, don't miss comma next to url.
