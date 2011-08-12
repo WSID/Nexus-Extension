@@ -1,0 +1,19 @@
+Changes in 0.3
+ * Now, the extension is adaptive to screen dimension change.
+	(Screen Rotation and Size...)
+ * Uses gsettings.
+	Sensitive to parameter changes.
+ * Modulized placing actor under windows.
+	Nexus-Extension/nexus@wsidre.egloos.com/actorwrap.js
+	You may use it to make live wallpaper in gnome shell. 'u'
+ * Don't using parameters from metadata.json
+ * Information file is added
+	README, INSTALL, NEWS
+
+Changes in 0.2
+ * FIXed the bug that "Energy pellet goes over windows"
+ * Meets the world.
+	( Really released first 'u' )
+
+Changes in 0.1
+ * Almost first released. 'u'

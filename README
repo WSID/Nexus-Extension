@@ -1,10 +1,52 @@
-From here, you can put your custom values for this extension.
-Availiable Options are,
-pool_capacity, spawn_timeout, spawn_probability
-pool_capacity: Capacity of pool. If no availiable pellet in pool, no pellet
-				spawn unless some of previous pellets are recycled.
-spawn_timeout: How frequently it try to spawn pellet - lesser will be more
-				frequently ( in millisecond ).
-spawn_probability: Probability of spawning a pellet. ( from 0 to 1 )
+This is gnome shell extension which draws energy beam like shape under windows.
+This is clone of Nexus Live Wallpaper from android.
 
-After you add these parameters, don't miss comma next to url.
+To install this extension, refer INSTALL.
+
+Written by WSID ( http://wsidre.egloos.com, jongsome@naver.com )
+
+################################################################################
+1. Folder layout
+################################################################################
+Nexus-Extension/README					: This file.
+Nexus-Extension/NEWS					: Update info of this extension.
+Nexus-Extension/INSTALL					: Install instructions. PLEASE READ IT!
+Nexus-Extension/nexus@wsidre.egloos.com	: Extension folder.
+Nexus-Extension/schemas					: Folder which contains a gsettings 
+										  schema which is used by this extension.
+										  
+
+################################################################################
+2. Nexus-Extension/schemas
+################################################################################
+From version 0.3 the extension will use GSettings from GIO instead of using
+extra values from metadata.json. Therefore, a proper schema file for gsettings
+is needed.
+Please refer INSTALL. If the schema file isn't installed properly, the extension
+WILL BE CRUSHED and then, whole gnome shell.
+
+
+################################################################################
+3. Adjustment Parameters
+################################################################################
+There are some parameters to tune this extension. As this uses gsettings, we can
+adjust parameters via gsetting editing tools. ( eg. dconf-editor, gsettigns... )
+
+The schema the extension uses is "org.gnome.shell.extensions.nexus".
+
+Parameter			= default	: description
+--------------------------------------------------------------------------------
+pool-capacity		= 64		: Number of prebuilt shapes. No extra creation :
+								  If all of them are in use, no spawn until
+								  any of them is returned.
+								  Change on this parameter will take effect
+								  after the extension restarts.
+proceed-timeout		= 30(ms)	: Interval of animating steps. - If it has lower
+								  value, The animation would be smoother.
+spawn-probability	= 0.3		: Probability of spawning energy beam shape.
+								  1 always spawns energy beams every spawn-
+								  timeout, while 0 never spawns any of them.
+spawn-timeout		= 150		: interval of timeout of spawning. every timeout,
+								  energy beam is spawned with spawn-probability.
+speed-max			= 500		: Max speed of energy beam.
+speed-min			= 360		: Min speed of energy beam.

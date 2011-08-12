@@ -1,0 +1,23 @@
+# This extension is gnome shell extension. However, this extension uses
+# gsettings, so some more steps are needed.
+#
+# 1. Install extension
+# Put the extension in extension folder.
+# If you want install this for all users (globally), change latter path into
+# /usr/share/gnome-shell/extensions/
+
+cp -R nexus@wsidre.egloos.com/ ~/.local/share/gnome-shell/extensions/
+
+# 2. Install gsettings schema
+# Proper schema file is needed to be installed properly.
+
+sudo cp schemas/org.gnome.shell.extensions.nexus.gschema.xml \
+	/usr/share/glib-2.0/schemas
+
+# After you put the schema file, compile schema files.
+
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas
+
+# If you are clever, you would find this file can be executed and will install
+# the extension. And you may want to run below code.
+# $ chmod +x INSTALL ; sh INSTALL
