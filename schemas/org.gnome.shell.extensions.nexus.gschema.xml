@@ -4,19 +4,23 @@
 	
 		<key type="i" name="pool-capacity">
 			<default>64</default>
+			<range min="1" max="2147483648"/>
 			<summary>Capacity of Pellet Pool</summary>
 			<description>Capacity of pellet pool which pre-creates and stores pellets. No extra creation of pellet.
 						 ( If all of pellets in pool are on screen, no spawning pellet before some pellet get out and be availiable to use. )</description>
 		</key>
 		<key type="i" name="spawn-timeout">
 			<default>150</default>
+			<range min="10" max="2147483648"/>
 			<summary>Spawning Timeout</summary>
 			<description>Spawning timeout. (or interval)
 						 On every timeout, a pellet is spawned in spawn-probability</description>
+			
 		</key>
 		
 		<key type="d" name="spawn-probability">
 			<default>0.3</default>
+			<range min="0" max="1"/>
 			<summary>Spawning probability</summary>
 			<description>Spawning probability where spawning is actually done.
 						 0 never spawn any pellets, 1 spawns a pellet every timeout.</description>
@@ -24,6 +28,7 @@
 		
 		<key type="i" name="proceed-timeout">
 			<default>30</default>
+			<range min="10" max="2147483648"/>
 			<summary>Proceeding animation timeout</summary>
 			<description>Timeout ( or interval ) of animating pellets.
 						 lower value would yields smoother animation but uses more cpu time.</description>
@@ -31,12 +36,14 @@
 		
 		<key type="d" name="speed-min">
 			<default>360</default>
+			<range min="1" max="4096"/>
 			<summary>Minimum Speed</summary>
 			<description>Minimum Speed of pellet.</description>
 		</key>
 		
 		<key type="d" name="speed-max">
 			<default>500</default>
+			<range min="1" max="4096"/>
 			<summary>Maximum Speed</summary>
 			<description>Maximum Speed of pellet.</description>
 		</key>
