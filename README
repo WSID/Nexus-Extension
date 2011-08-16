@@ -6,6 +6,15 @@ To install this extension, refer INSTALL.
 Written by WSID ( http://wsidre.egloos.com, jongsome@naver.com )
 
 ################################################################################
+0. Experimental Branch
+################################################################################
+This version of extension is under construction and introducing experimental
+things.
+In this experimental version,
+ - Pellets from Cairo ( and, some parameters for color, appearance of them )
+would be introduced.
+
+################################################################################
 1. Folder layout
 ################################################################################
 Nexus-Extension/README					: This file.
