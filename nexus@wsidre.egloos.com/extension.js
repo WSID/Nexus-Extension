@@ -18,9 +18,12 @@
 
 //Include Statements
 const GLib = imports.gi.GLib;
+const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const Cairo = imports.cairo;
+const St = imports.gi.St;
 
 const Lang = imports.lang;
 const Main = imports.ui.main;
@@ -144,26 +147,93 @@ Pellet.prototype = {
 	/** pellet_init: void
 	 * Initialize pellet management system before it would be usable.
 	 */
-function pellet_init( ) {
+function init( ) {
 	/* Initialize Plane */
 	pellet_plane = new Clutter.Group();
 	pellet_plane.set_anchor_point( -7, -7 );
 	
-	/* wrap_plane */
-	ActorWrap.add_actor( pellet_plane );
 	
 	/* Initialize pool */
 	Pool.init( pool_capacity, Pellet );
 	
+	/* wrap_plane */
+	ActorWrap.init( );
+	ActorWrap.add_actor( pellet_plane );
+	
 	/* Initialize source actors */
 	src_pellets = new Array(4);
-	for( let i = 0; i < 4; i++ ){
-		src_pellets[i] =
-			new Clutter.Texture( {filename:extension_path + '/' + SrcFileName[i]} );
-		src_pellets[i].visible = false;
-		pellet_plane.add_actor( src_pellets[i] );
-	}
 	
+	src_pellets[0] = create_pellet_src( 14, 393, 27, 'red', 0.3);
+	src_pellets[1] = create_pellet_src( 14, 393, 27, 'green', 0.3);
+	src_pellets[2] = create_pellet_src( 14, 393, 27, 'blue', 0.3);
+	src_pellets[3] = create_pellet_src( 14, 393, 27, 'yellow', 0.3);
+	
+//	for( let i = 0; i < 4; i++ ){
+//		src_pellets[i] =
+//			new Clutter.Texture( {filename:extension_path + '/' + SrcFileName[i]} );
+//		src_pellets[i].visible = false;
+//		pellet_plane.add_actor( src_pellets[i] );
+//	}
+
+}
+
+	/** create_pellet_src: St.DrawingArea
+	 * Constructs colorized energy pellet. It uses cairo rather than images.
+	 *
+	 * width		:float				: width of pellet
+	 * trail_length	:float				: length of trailing
+	 * glow_radius	:float				: radius of glowing
+	 * color		:object{
+	 *					red		:double	: Red value of energy
+	 *					green	:double	: Green value of energy
+	 *					blue	:double	: ...
+	 *					alpha	:double	: Alpha value of energy
+	 *				 }
+	 *				 or string			: String representation that read by
+	 *									  Gdk.RGBA.parse
+	 */
+function create_pellet_src( width, trail_length, glow_radius, color, base_alpha ){
+	let cstruct;
+	let result;
+	
+	if( typeof(color) == "string" ){
+		cstruct = new Gdk.RGBA();
+		if( ! cstruct.parse( color ) )
+			throw new TypeError("Given string " + color + " cannot be parsed." );
+	}
+	else cstruct = color;
+	
+	result = new St.DrawingArea({ width		:trail_length + glow_radius,
+								  height	:glow_radius + glow_radius});
+	global.stage.add_actor(result);
+	result.move_by( 0 - width - glow_radius, 0 - glow_radius - glow_radius )
+	result.set_anchor_point( trail_length, glow_radius );
+	result.connect('repaint', function( area ){
+		let context = area.get_context();
+		/* Draw Trailing with Linear Gradient */
+		let trailing_pat = new Cairo.LinearGradient(0, 0, trail_length + width / 2, 0 );
+		trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
+		trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha * base_alpha );
+	
+			context.setSource( trailing_pat );
+			context.rectangle( 0, glow_radius - (width / 2),
+							   trail_length + (width / 2), width );
+			context.fill( );
+	
+		/* Draw glowing with Radial Gradient */
+		let glow_pat = new Cairo.RadialGradient( trail_length, glow_radius, width / 2,
+											 trail_length, glow_radius, glow_radius );
+		glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha * base_alpha);
+		glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
+	
+			context.setSource( glow_pat );
+			context.rectangle( trail_length - glow_radius, 0,
+							   glow_radius * 2, glow_radius * 2 );
+			context.fill( );
+	} );
+	result.queue_repaint();
+
+	return result;
 }
 
 	/** pellet_pool_proceed: void
@@ -312,9 +382,8 @@ function main(metadata) {
 	step_max = speed_max * proceed_timeout / 1000 ;
 	
 	extension_path = metadata.path;
-					
-	ActorWrap.init( );
-	pellet_init( );
+
+	init( );
 	
 	/* Get notify when settings is changed */
 	settings.connect('changed', shandler_settings_change );
