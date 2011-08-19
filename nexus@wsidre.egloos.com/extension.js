@@ -163,10 +163,10 @@ function init( ) {
 	/* Initialize source actors */
 	src_pellets = new Array(4);
 	
-	src_pellets[0] = create_pellet_src( 14, 393, 27, 'red', 0.3);
-	src_pellets[1] = create_pellet_src( 14, 393, 27, 'green', 0.3);
-	src_pellets[2] = create_pellet_src( 14, 393, 27, 'blue', 0.3);
-	src_pellets[3] = create_pellet_src( 14, 393, 27, 'yellow', 0.3);
+	src_pellets[0] = create_pellet_src( 14, 393, 21, 'rgba(255, 0, 0, 0.3)');
+	src_pellets[1] = create_pellet_src( 14, 393, 21, 'rgba(0, 255, 0, 0.3)');
+	src_pellets[2] = create_pellet_src( 14, 393, 21, 'rgba(0, 0, 255, 0.3)');
+	src_pellets[3] = create_pellet_src( 14, 393, 21, 'rgba(255, 255, 0, 0.2)');
 	
 //	for( let i = 0; i < 4; i++ ){
 //		src_pellets[i] =
@@ -206,14 +206,16 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 	result = new Clutter.CairoTexture(
 			{ 'surface-width'	:trail_length + glow_radius,
 			  'surface-height'	:glow_radius + glow_radius }	);
-	draw_pellet_src( width, trail_length, glow_radius, color, result );
+	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
 	result.set_anchor_point( trail_length, glow_radius );
+	global.stage.add_actor( result );
+	result.visible = false;
 
 	return result;
 }
 
-function draw_pellet_src( width, trail_length, glow_radius, color, texture ){
-	let context = texture.create();
+function draw_pellet_src( width, trail_length, glow_radius, cstruct, texture ){
+	var context = texture.create();
 	/* Draw Trailing with Linear Gradient */
 	let trailing_pat = new Cairo.LinearGradient(0, 0, trail_length + width / 2, 0 );
 	trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
@@ -234,6 +236,7 @@ function draw_pellet_src( width, trail_length, glow_radius, color, texture ){
 		context.rectangle( trail_length - glow_radius, 0,
 						   glow_radius * 2, glow_radius * 2 );
 		context.fill( );
+	context = null;
 }
 
 	/** pellet_pool_proceed: void
