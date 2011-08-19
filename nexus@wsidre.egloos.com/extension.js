@@ -192,7 +192,7 @@ function init( ) {
 	 *				 or string			: String representation that read by
 	 *									  Gdk.RGBA.parse
 	 */
-function create_pellet_src( width, trail_length, glow_radius, color, base_alpha ){
+function create_pellet_src( width, trail_length, glow_radius, color ){
 	let cstruct;
 	let result;
 	
@@ -203,37 +203,37 @@ function create_pellet_src( width, trail_length, glow_radius, color, base_alpha 
 	}
 	else cstruct = color;
 	
-	result = new St.DrawingArea({ width		:trail_length + glow_radius,
-								  height	:glow_radius + glow_radius});
-	global.stage.add_actor(result);
-	result.move_by( 0 - width - glow_radius, 0 - glow_radius - glow_radius )
+	result = new Clutter.CairoTexture(
+			{ 'surface-width'	:trail_length + glow_radius,
+			  'surface-height'	:glow_radius + glow_radius }	);
+	draw_pellet_src( width, trail_length, glow_radius, color, result );
 	result.set_anchor_point( trail_length, glow_radius );
-	result.connect('repaint', function( area ){
-		let context = area.get_context();
-		/* Draw Trailing with Linear Gradient */
-		let trailing_pat = new Cairo.LinearGradient(0, 0, trail_length + width / 2, 0 );
-		trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
-		trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha * base_alpha );
-	
-			context.setSource( trailing_pat );
-			context.rectangle( 0, glow_radius - (width / 2),
-							   trail_length + (width / 2), width );
-			context.fill( );
-	
-		/* Draw glowing with Radial Gradient */
-		let glow_pat = new Cairo.RadialGradient( trail_length, glow_radius, width / 2,
-											 trail_length, glow_radius, glow_radius );
-		glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha * base_alpha);
-		glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
-	
-			context.setSource( glow_pat );
-			context.rectangle( trail_length - glow_radius, 0,
-							   glow_radius * 2, glow_radius * 2 );
-			context.fill( );
-	} );
-	result.queue_repaint();
 
 	return result;
+}
+
+function draw_pellet_src( width, trail_length, glow_radius, color, texture ){
+	let context = texture.create();
+	/* Draw Trailing with Linear Gradient */
+	let trailing_pat = new Cairo.LinearGradient(0, 0, trail_length + width / 2, 0 );
+	trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
+	trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
+
+		context.setSource( trailing_pat );
+		context.rectangle( 0, glow_radius - (width / 2),
+						   trail_length + (width / 2), width );
+		context.fill( );
+
+	/* Draw glowing with Radial Gradient */
+	let glow_pat = new Cairo.RadialGradient( trail_length, glow_radius, width / 2,
+										 trail_length, glow_radius, glow_radius );
+	glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
+	glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
+
+		context.setSource( glow_pat );
+		context.rectangle( trail_length - glow_radius, 0,
+						   glow_radius * 2, glow_radius * 2 );
+		context.fill( );
 }
 
 	/** pellet_pool_proceed: void
