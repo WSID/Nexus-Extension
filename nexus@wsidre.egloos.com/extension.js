@@ -34,7 +34,7 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
 var settings;
 
-	/* Value of parameters */
+	/* Value of parameters - Refer to README for more information. 'u' */
 var pool_capacity;
 var spawn_timeout;
 var spawn_probability;
@@ -42,6 +42,16 @@ var proceed_timeout;
 var speed_min;
 var speed_max;
 var extension_path;
+	/* Pellet appearance parameters - Refer to README too. 'u' */
+var pellet_colors = ['rgba(255, 15, 15, 0.3)',
+					 'rgba(15, 255, 15, 0.3)',
+					 'rgba(15, 15, 255, 0.3)',
+					 'rgba(255, 255, 0, 0.3)'];
+var pellet_trail_length = 393;
+var pellet_width = 14; 
+var pellet_glow_radius = 21;
+var pellet_offset_x = 0;
+var pellet_offset_y = 0;
 
 var step_min;
 var step_max;
@@ -78,17 +88,17 @@ var pellet_plane;			/* for background */
 var swidth = global.stage.width;
 var sheight = global.stage.height;
 
-//As pellets are aligned by 14 pixels in an axis, we use integer based index
-//	to place pellets. Used with index_2_pos().
-var xindexe = (swidth + 13) / 14;
-var yindexe = (sheight + 13 ) / 14;
+//As pellets are aligned by 14 pixels in an axis, not to do divisions to place
+//	pellets. Used with index_2_pos().
+var xindexe = Math.ceil(swidth + pellet_width );
+var yindexe = Math.ceil(sheight + pellet_width );
 
 	/** index_2_pos: int
 	 * index:	int:	index of place.
 	 * Return:	int:	position of index.
 	 */
 function index_2_pos( index ) {
-	return index * 14;
+	return index * pellet_width;
 }
 
 
@@ -112,7 +122,7 @@ Pellet.prototype = {
 		
 		this.actor = new Clutter.Clone({});
 		
-		this.actor.set_anchor_point( 393, 21 );
+		this.actor.set_anchor_point( pellet_trail_length, pellet_glow_radius );
 		this.actor.visible = false;
 		pellet_plane.add_actor(this.actor);
 		
@@ -136,8 +146,8 @@ Pellet.prototype = {
 		
 		let res;
 		
-		res = ( x <= -393 ) || ( (swidth + 393 ) <= x ) ||
-			  ( y <= -393 ) || ( (sheight + 393 ) <= y);
+		res = ( x <= -pellet_trail_length ) || ( (swidth + pellet_trail_length ) <= x ) ||
+			  ( y <= -pellet_trail_length ) || ( (sheight + pellet_trail_length ) <= y);
 		return res;
 	},
 };
@@ -150,7 +160,8 @@ Pellet.prototype = {
 function init( ) {
 	/* Initialize Plane */
 	pellet_plane = new Clutter.Group();
-	pellet_plane.set_anchor_point( -7, -7 );
+	pellet_plane.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
+								   -pellet_width / 2 + pellet_offset_y );
 	
 	
 	/* Initialize pool */
@@ -162,11 +173,12 @@ function init( ) {
 	
 	/* Initialize source actors */
 	src_pellets = new Array(4);
-	
-	src_pellets[0] = create_pellet_src( 14, 393, 21, 'rgba(255, 0, 0, 0.3)');
-	src_pellets[1] = create_pellet_src( 14, 393, 21, 'rgba(0, 255, 0, 0.3)');
-	src_pellets[2] = create_pellet_src( 14, 393, 21, 'rgba(0, 0, 255, 0.3)');
-	src_pellets[3] = create_pellet_src( 14, 393, 21, 'rgba(255, 255, 0, 0.2)');
+	for( let i = 0; i < pellet_colors.length ; i++ ){
+		src_pellets[i] = create_pellet_src( pellet_width,
+											pellet_trail_length,
+											pellet_glow_radius,
+											pellet_colors[i] );
+	}
 	
 //	for( let i = 0; i < 4; i++ ){
 //		src_pellets[i] =
@@ -208,7 +220,7 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 			  'surface-height'	:glow_radius + glow_radius }	);
 	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
 	result.set_anchor_point( trail_length, glow_radius );
-	global.stage.add_actor( result );
+	pellet_plane.add_actor( result );
 	result.visible = false;
 
 	return result;
@@ -285,14 +297,14 @@ function pellet_spawn( ){
 			rand_pos = index_2_pos( GLib.random_int_range(0, xindexe) );
 			spawnee._step_x = -rand_spd;
 			spawnee._step_y = 0;
-			spawnee.actor.x = swidth + 21;
+			spawnee.actor.x = swidth + pellet_glow_radius;
 			spawnee.actor.y = rand_pos;
 			break;
 		case Direction.RIGHT:
 			rand_pos = index_2_pos( GLib.random_int_range(0, xindexe) );
 			spawnee._step_x = rand_spd;
 			spawnee._step_y = 0;
-			spawnee.actor.x = -21;
+			spawnee.actor.x = -pellet_glow_radius;
 			spawnee.actor.y = rand_pos;
 			break;
 		case Direction.UP:
@@ -300,14 +312,14 @@ function pellet_spawn( ){
 			spawnee._step_x = 0;
 			spawnee._step_y = -rand_spd;
 			spawnee.actor.x = rand_pos;
-			spawnee.actor.y = sheight + 21;
+			spawnee.actor.y = sheight + pellet_glow_radius;
 			break;
 		case Direction.DOWN:
 			rand_pos = index_2_pos( GLib.random_int_range(0, yindexe) );
 			spawnee._step_x = 0;
 			spawnee._step_y = rand_spd;
 			spawnee.actor.x = rand_pos;
-			spawnee.actor.y = -21;
+			spawnee.actor.y = -pellet_glow_radius;
 			break;
 		}
 
@@ -364,8 +376,8 @@ function shandler_screen_change(){
 	swidth = global.stage.width;
 	sheight = global.stage.height;
 	
-	xindexe = (swidth + 13) / 14;
-	yindexe = (sheight + 13 ) / 14;
+	xindexe = Math.ceil(swidth + pellet_width);
+	yindexe = Math.ceil(sheight + pellet_width );
 }
 
 //Main
