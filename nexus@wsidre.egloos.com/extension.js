@@ -42,15 +42,12 @@ var speed_min;
 var speed_max;
 var extension_path;
 	/* Pellet appearance parameters - Refer to README too. 'u' */
-var pellet_colors = ['rgba(255, 15, 15, 0.3)',
-					 'rgba(15, 255, 15, 0.3)',
-					 'rgba(15, 15, 255, 0.3)',
-					 'rgba(255, 255, 0, 0.3)'];
-var pellet_trail_length = 393;
-var pellet_width = 14; 
-var pellet_glow_radius = 21;
-var pellet_offset_x = 0;
-var pellet_offset_y = 0;
+var pellet_colors;
+var pellet_trail_length;
+var pellet_width; 
+var pellet_glow_radius;
+var pellet_offset_x;
+var pellet_offset_y;
 
 var step_min;
 var step_max;
@@ -391,6 +388,13 @@ function main(metadata) {
 	spawn_probability = settings.get_double('spawn-probability');
 	speed_min = settings.get_double('speed-min');
 	speed_max = settings.get_double('speed-max');
+	
+	pellet_colors = settings.get_strv('pellet-colors');
+	pellet_trail_length = settings.get_double('pellet-trail-length');
+	pellet_width = settings.get_double('pellet-width');
+	pellet_glow_radius = settings.get_double('pellet-glow-radius');
+	pellet_offset_x = settings.get_double('pellet-offset-x');
+	pellet_offset_y = settings.get_double('pellet-offset-y');
 	
 	step_min = speed_min * proceed_timeout / 1000 ;
 	step_max = speed_max * proceed_timeout / 1000 ;

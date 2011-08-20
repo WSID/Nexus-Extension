@@ -7,14 +7,15 @@
 			<range min="1" max="2147483647"/>
 			<summary>Capacity of Pellet Pool</summary>
 			<description>Capacity of pellet pool which pre-creates and stores pellets. No extra creation of pellet.
-						 ( If all of pellets in pool are on screen, no spawning pellet before some pellet get out and be availiable to use. )</description>
+( If all of pellets in pool are on screen, no spawning pellet before some pellet get out and be availiable to use. )
+Change on this key will take effect after restart.</description>
 		</key>
 		<key type="i" name="spawn-timeout">
 			<default>150</default>
 			<range min="10" max="2147483647"/>
 			<summary>Spawning Timeout</summary>
 			<description>Spawning timeout. (or interval)
-						 On every timeout, a pellet is spawned in spawn-probability</description>
+On every timeout, a pellet is spawned in spawn-probability</description>
 			
 		</key>
 		
@@ -23,7 +24,7 @@
 			<range min="0" max="1"/>
 			<summary>Spawning probability</summary>
 			<description>Spawning probability where spawning is actually done.
-						 0 never spawn any pellets, 1 spawns a pellet every timeout.</description>
+0 never spawn any pellets, 1 spawns a pellet every timeout.</description>
 		</key>
 		
 		<key type="i" name="proceed-timeout">
@@ -31,7 +32,7 @@
 			<range min="10" max="2147483647"/>
 			<summary>Proceeding animation timeout</summary>
 			<description>Timeout ( or interval ) of animating pellets.
-						 lower value would yields smoother animation but uses more cpu time.</description>
+lower value would yields smoother animation but uses more cpu time.</description>
 		</key>
 		
 		<key type="d" name="speed-min">
@@ -46,6 +47,43 @@
 			<range min="1" max="4096"/>
 			<summary>Maximum Speed</summary>
 			<description>Maximum Speed of pellet.</description>
+		</key>
+
+
+		<key type="as" name="pellet-colors">
+			<default>['rgba(255, 15, 15, 0.3)', 'rgba(15, 255, 15, 0.3)', 'rgba(15, 15, 255, 0.3)', 'rgba(255, 255, 0, 0.3)']</default>
+			<summary>Color of pellets</summary>
+			<description>Color of pellets. You can put one or more colors you like to see.
+Change on this key will take effect after restart.</description>
+		</key>
+		
+		<key type="d" name="pellet-trail-length">
+			<default>393</default>
+			<range min="1" max="4096"/>
+			<summary>Length of trailing tail</summary>
+		</key>
+		
+		<key type="d" name="pellet-width">
+			<default>14</default>
+			<range min="1" max="4096"/>
+			<summary>Width of pellet</summary>
+		</key>
+		
+		<key type="d" name="pellet-glow-radius">
+			<default>21</default>
+			<range min="0" max="4096"/>
+			<summary>Radius of glowing of pellet</summary>
+		</key>
+		
+		<key type="d" name="pellet-offset-x">
+			<default>0</default>
+			<range min="-4096" max="4096"/>
+			<summary>Offset of pellet</summary>
+		</key>
+		<key type="d" name="pellet-offset-y">
+			<default>0</default>
+			<range min="-4096" max="4096"/>
+			<summary>Offset of pellet</summary>
 		</key>
 	</schema>
 </schemalist>
