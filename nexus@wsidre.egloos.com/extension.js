@@ -23,7 +23,6 @@ const Gio = imports.gi.Gio;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const Cairo = imports.cairo;
-const St = imports.gi.St;
 
 const Lang = imports.lang;
 const Main = imports.ui.main;
@@ -90,8 +89,8 @@ var sheight = global.stage.height;
 
 //As pellets are aligned by 14 pixels in an axis, not to do divisions to place
 //	pellets. Used with index_2_pos().
-var xindexe = Math.ceil(swidth + pellet_width );
-var yindexe = Math.ceil(sheight + pellet_width );
+var xindexe = Math.ceil(swidth / pellet_width );
+var yindexe = Math.ceil(sheight / pellet_width );
 
 	/** index_2_pos: int
 	 * index:	int:	index of place.
@@ -172,7 +171,7 @@ function init( ) {
 	ActorWrap.add_actor( pellet_plane );
 	
 	/* Initialize source actors */
-	src_pellets = new Array(4);
+	src_pellets = new Array(pellet_colors.length);
 	for( let i = 0; i < pellet_colors.length ; i++ ){
 		src_pellets[i] = create_pellet_src( pellet_width,
 											pellet_trail_length,
@@ -189,7 +188,7 @@ function init( ) {
 
 }
 
-	/** create_pellet_src: St.DrawingArea
+	/** create_pellet_src: Clutter.CairoTexture
 	 * Constructs colorized energy pellet. It uses cairo rather than images.
 	 *
 	 * width		:float				: width of pellet
@@ -376,8 +375,8 @@ function shandler_screen_change(){
 	swidth = global.stage.width;
 	sheight = global.stage.height;
 	
-	xindexe = Math.ceil(swidth + pellet_width);
-	yindexe = Math.ceil(sheight + pellet_width );
+	xindexe = Math.ceil(swidth / pellet_width);
+	yindexe = Math.ceil(sheight / pellet_width );
 }
 
 //Main
