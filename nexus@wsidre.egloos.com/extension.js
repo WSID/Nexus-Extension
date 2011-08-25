@@ -65,15 +65,6 @@ const Direction = {
 	UP		: 3
 }
 
-	/** SrcFileName: string[4]
-	 * (Relative) Paths of image files of pellet.
-	 */
-const SrcFileName = [
-	'image/pellet_r.png',
-	'image/pellet_g.png',
-	'image/pellet_b.png',
-	'image/pellet_y.png'];
-
 //Source pellets
 var src_pellets;
 
@@ -175,14 +166,6 @@ function init( ) {
 											pellet_glow_radius,
 											pellet_colors[i] );
 	}
-	
-//	for( let i = 0; i < 4; i++ ){
-//		src_pellets[i] =
-//			new Clutter.Texture( {filename:extension_path + '/' + SrcFileName[i]} );
-//		src_pellets[i].visible = false;
-//		pellet_plane.add_actor( src_pellets[i] );
-//	}
-
 }
 
 	/** create_pellet_src: Clutter.CairoTexture
