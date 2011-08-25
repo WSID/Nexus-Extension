@@ -54,6 +54,7 @@ lower value would yields smoother animation but uses more cpu time.</description
 			<default>['rgba(255, 15, 15, 0.3)', 'rgba(15, 255, 15, 0.3)', 'rgba(15, 15, 255, 0.3)', 'rgba(255, 255, 0, 0.3)']</default>
 			<summary>Color of pellets</summary>
 			<description>Color of pellets. You can put one or more colors you like to see.
+Fill this setting in format which Gdk.RGBA.parse() would understand. For example, rgba(int, int, int, 0 ~ 1 ).
 Change on this key will take effect after restart.</description>
 		</key>
 		
@@ -61,29 +62,34 @@ Change on this key will take effect after restart.</description>
 			<default>393</default>
 			<range min="1" max="4096"/>
 			<summary>Length of trailing tail</summary>
+			<description>Change on this key will take effect after restart.</description>
 		</key>
 		
 		<key type="d" name="pellet-width">
 			<default>14</default>
 			<range min="1" max="4096"/>
 			<summary>Width of pellet</summary>
+			<description>Change on this key will take effect after restart.</description>
 		</key>
 		
 		<key type="d" name="pellet-glow-radius">
 			<default>21</default>
 			<range min="0" max="4096"/>
 			<summary>Radius of glowing of pellet</summary>
+			<description>Change on this key will take effect after restart.</description>
 		</key>
 		
 		<key type="d" name="pellet-offset-x">
 			<default>0</default>
 			<range min="-4096" max="4096"/>
 			<summary>Offset of pellet</summary>
+			<description>Change on this key will take effect after restart.</description>
 		</key>
 		<key type="d" name="pellet-offset-y">
 			<default>0</default>
 			<range min="-4096" max="4096"/>
 			<summary>Offset of pellet</summary>
+			<description>Change on this key will take effect after restart.</description>
 		</key>
 	</schema>
 </schemalist>
