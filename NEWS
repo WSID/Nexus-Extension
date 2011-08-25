@@ -1,3 +1,9 @@
+Changes in experimental-cairo
+ * Dropped image-based stuff and now paints using vector.
+ 	(Using Clutter.CairoTexture)
+ * Introduces pellet appearance parameters.
+ 	Changes will take effect after restart.
+
 Changes in 0.3
  * Now, the extension is adaptive to screen dimension change.
 	(Screen Rotation and Size...)

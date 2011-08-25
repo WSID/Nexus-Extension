@@ -58,3 +58,17 @@ spawn-timeout		= 150		: 생성의 시간 간격을 의미합니다. 매 timeout�
 								  모양이 spawn-probability의 확률로 생성됩니다.
 speed-max			= 500		: 에너지 빔의 최대 속도.
 speed-min			= 360		: 에너지 빔의 최소 속도.
+
+또한 시험중인 버전에서는 에너지 빔의 모양에 영향을 주는 Parameter들도 추가됩니다. 이 키들에 대한
+변경점은 재시작시에 적용됩니다.
+
+Parameter			= default	: description
+--------------------------------------------------------------------------------
+pellet-colors		= ....		: 색깔의 배열입니다. 각 항목은 색상을 나타내는 문자열입니다.
+								  이 문자열은 Gdk.RGBA.parse()에 의해 읽힐 수 있는 형식
+								  을 지녀야 합니다.
+pellet-trail-length	= 393		: 꼬리의 길이입니다.
+pellet-width		= 14		: 에너지 빔의 넓이( 또는 두께 )입니다..
+pellet-glow-radius	= 21		: 빛이 퍼지는 범위입니다. 꼬리는 빛이 퍼지지 않습니다.
+pellet-offset-x		= 0			: 에너지 빔 배치시의 offset
+pellet-offset-y		= 0			: 에너지 빔 배치시의 offset

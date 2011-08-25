@@ -12,7 +12,7 @@ This version of extension is under construction and introducing experimental
 things.
 In this experimental version,
  - Pellets from Cairo ( and, some parameters for color, appearance of them )
-would be introduced.
+is introduced.
 
 ################################################################################
 1. Folder layout
@@ -59,3 +59,19 @@ spawn-timeout		= 150		: interval of timeout of spawning. every timeout,
 								  energy beam is spawned with spawn-probability.
 speed-max			= 500		: Max speed of energy beam.
 speed-min			= 360		: Min speed of energy beam.
+
+Also, in this experimental version, parameters are introduced which are related
+to appearance of pellets. Changes to these keys require restart to take effect.
+
+Parameter			= default	: description
+--------------------------------------------------------------------------------
+pellet-colors		= ....		: Array of colors. Each element is a string that
+								  represents a color, which is used to render
+								  pellets.
+pellet-trail-length	= 393		: The length of trailing tail.
+pellet-width		= 14		: The width of pellet.
+pellet-glow-radius	= 21		: The radius of glowing. Note that trailing will
+								  not glow.
+pellet-offset-x		= 0			: Offset of placement of pellets.
+pellet-offset-y		= 0			: Offset of placement of pellets.
+								  
