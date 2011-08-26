@@ -195,7 +195,7 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 	else cstruct = color;
 	
 	result = new Clutter.CairoTexture(
-			{ 'surface-width'	:trail_length + glow_radius,
+			{ 'surface-width'	:Math.max(trail_length, glow_radius) + glow_radius,
 			  'surface-height'	:glow_radius + glow_radius }	);
 	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
 	result.set_anchor_point( trail_length, glow_radius );
@@ -208,23 +208,28 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 function draw_pellet_src( width, trail_length, glow_radius, cstruct, texture ){
 	var context = texture.create();
 	/* Draw Trailing with Linear Gradient */
-	let trailing_pat = new Cairo.LinearGradient(0, 0, trail_length + width / 2, 0 );
+	let trail_start	= Math.min(0, glow_radius - trail_length);
+	let trail_end	= Math.max(glow_radius, trail_length) + (width / 2);
+	
+	let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
 	trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
 	trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
 
 		context.setSource( trailing_pat );
-		context.rectangle( 0, glow_radius - (width / 2),
+		context.rectangle( trail_start, glow_radius - (width / 2),
 						   trail_length + (width / 2), width );
 		context.fill( );
 
 	/* Draw glowing with Radial Gradient */
-	let glow_pat = new Cairo.RadialGradient( trail_length, glow_radius, width / 2,
-										 trail_length, glow_radius, glow_radius );
+	let center_x = Math.min(glow_radius, trail_length);
+	
+	let glow_pat = new Cairo.RadialGradient( center_x, glow_radius, width / 2,
+											 center_x, glow_radius, glow_radius );
 	glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
 	glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
 
 		context.setSource( glow_pat );
-		context.rectangle( trail_length - glow_radius, 0,
+		context.rectangle( center_x - glow_radius, 0,
 						   glow_radius * 2, glow_radius * 2 );
 		context.fill( );
 	context = null;
