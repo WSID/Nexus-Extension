@@ -194,9 +194,7 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 	}
 	else cstruct = color;
 	
-	result = new Clutter.CairoTexture(
-			{ 'surface-width'	:Math.max(trail_length, glow_radius) + glow_radius,
-			  'surface-height'	:glow_radius + glow_radius }	);
+	result = new Clutter.CairoTexture();
 	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
 	result.set_anchor_point( trail_length, glow_radius );
 	pellet_plane.add_actor( result );
@@ -206,31 +204,42 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 }
 
 function draw_pellet_src( width, trail_length, glow_radius, cstruct, texture ){
-	var context = texture.create();
-	/* Draw Trailing with Linear Gradient */
-	let trail_start	= Math.min(0, glow_radius - trail_length);
-	let trail_end	= Math.max(glow_radius, trail_length) + (width / 2);
 	
+	let center_x = Math.max(glow_radius, trail_length);
+	
+	let trail_start	= center_x - trail_length;
+	let trail_end	= center_x + (width / 2);
+	
+	let glow_start = center_x - glow_radius;
+	let glow_end = center_x + glow_radius;
+	
+	let sufrace_width = center_x + glow_radius;
+	let sufrace_height = glow_radius << 1;
+	
+	texture['surface-width'] = surface_width;
+	texture['surface-height'] = surface_height;
+	
+	var context = texture.create();
+	
+	/* Draw Trailing with Linear Gradient */
 	let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
 	trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
 	trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
 
 		context.setSource( trailing_pat );
 		context.rectangle( trail_start, glow_radius - (width / 2),
-						   trail_length + (width / 2), width );
+						   trail_end - trail_start, width );
 		context.fill( );
 
 	/* Draw glowing with Radial Gradient */
-	let center_x = Math.min(glow_radius, trail_length);
-	
 	let glow_pat = new Cairo.RadialGradient( center_x, glow_radius, width / 2,
 											 center_x, glow_radius, glow_radius );
 	glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
 	glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
 
 		context.setSource( glow_pat );
-		context.rectangle( center_x - glow_radius, 0,
-						   glow_radius * 2, glow_radius * 2 );
+		context.rectangle( glow_start, 0,
+						   glow_end - glow_start, surface_height );
 		context.fill( );
 	context = null;
 }
