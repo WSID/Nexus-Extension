@@ -9,7 +9,7 @@ Written by WSID ( http://wsidre.egloos.com, jongsome@naver.com )
 0. Experimental Branch
 ################################################################################
 This version of extension is under construction and introducing experimental
-things.
+things. Therefore, it may CONTAIN some BUGs. 
 In this experimental version,
  - Pellets from Cairo ( and, some parameters for color, appearance of them )
 is introduced.
@@ -61,7 +61,7 @@ speed-max			= 500		: Max speed of energy beam.
 speed-min			= 360		: Min speed of energy beam.
 
 Also, in this experimental version, parameters are introduced which are related
-to appearance of pellets. Changes to these keys require restart to take effect.
+to appearance of pellets. Changes to these keys require RESTART to take effect.
 
 Parameter			= default	: description
 --------------------------------------------------------------------------------

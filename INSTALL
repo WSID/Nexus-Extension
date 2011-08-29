@@ -18,6 +18,6 @@ sudo cp schemas/org.gnome.shell.extensions.nexus.gschema.xml \
 
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas
 
-# If you are clever, you would find this file can be executed and will install
+# If you are smart, you would find this file can be executed and will install
 # the extension. And you may want to run below code.
 # $ chmod +x INSTALL ; sh INSTALL
