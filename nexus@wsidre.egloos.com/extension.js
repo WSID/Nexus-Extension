@@ -52,6 +52,8 @@ var pellet_offset_y;
 var step_min;
 var step_max;
 
+var pellet_center_x;
+
 var proceed_source_id;
 var spawning_source_id;
 	/** Direction:
@@ -109,7 +111,7 @@ Pellet.prototype = {
 		
 		this.actor = new Clutter.Clone({});
 		
-		this.actor.set_anchor_point( pellet_trail_length, pellet_glow_radius );
+		this.actor.set_anchor_point( pellet_center_x, pellet_glow_radius );
 		this.actor.visible = false;
 		pellet_plane.add_actor(this.actor);
 		
@@ -133,8 +135,8 @@ Pellet.prototype = {
 		
 		let res;
 		
-		res = ( x <= -pellet_trail_length ) || ( (swidth + pellet_trail_length ) <= x ) ||
-			  ( y <= -pellet_trail_length ) || ( (sheight + pellet_trail_length ) <= y);
+		res = ( x <= -pellet_center_x ) || ( (swidth + pellet_center_x ) <= x ) ||
+			  ( y <= -pellet_center_x ) || ( (sheight + pellet_center_x ) <= y);
 		return res;
 	},
 };
@@ -196,9 +198,11 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 	
 	result = new Clutter.CairoTexture();
 	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
-	result.set_anchor_point( trail_length, glow_radius );
+	result.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	pellet_plane.add_actor( result );
-	result.visible = false;
+//	result.visible = false;
+	result.x = 300;
+	result.y = 300;
 
 	return result;
 }
@@ -213,8 +217,8 @@ function draw_pellet_src( width, trail_length, glow_radius, cstruct, texture ){
 	let glow_start = center_x - glow_radius;
 	let glow_end = center_x + glow_radius;
 	
-	let sufrace_width = center_x + glow_radius;
-	let sufrace_height = glow_radius << 1;
+	let surface_width = center_x + glow_radius;
+	let surface_height = glow_radius << 1;
 	
 	texture['surface-width'] = surface_width;
 	texture['surface-height'] = surface_height;
@@ -395,6 +399,8 @@ function main(metadata) {
 	
 	step_min = speed_min * proceed_timeout / 1000 ;
 	step_max = speed_max * proceed_timeout / 1000 ;
+	
+	pellet_center_x = Math.max(pellet_trail_length, pellet_glow_radius);
 	
 	extension_path = metadata.path;
 
