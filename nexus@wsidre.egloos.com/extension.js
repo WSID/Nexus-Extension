@@ -200,9 +200,7 @@ function create_pellet_src( width, trail_length, glow_radius, color ){
 	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
 	result.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	pellet_plane.add_actor( result );
-//	result.visible = false;
-	result.x = 300;
-	result.y = 300;
+	result.visible = false;
 
 	return result;
 }
