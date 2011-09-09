@@ -10,6 +10,7 @@
  *	speed_max			: Maximum Speed of pellet in pixel/sec
  *
  * 1. Pellets.
+ * 2. PelletSource.
  * 2. Pellet-related functions.
  * 3. Timeout callbacks, Signal Handlers.
  *
@@ -139,9 +140,79 @@ Pellet.prototype = {
 			  ( y <= -pellet_center_x ) || ( (sheight + pellet_center_x ) <= y);
 		return res;
 	},
+	set_source: function( psrc ) {
+		this.actor.source = psrc.actor;
+	}
 };
 
-/* **** 2. Pellet-related functions ***** */
+
+/* **** 2. PelletSource.	***** */
+
+	/** PelletSource:
+	 * visual source of pellet.
+	 */
+function PelletSource( width, trail_length, glow_radius, color ) {
+	this._init( width, trail_length, glow_radius, color );
+}
+
+PelletSource.prototype = {
+	_init: function ( width, trail_length, glow_radius, color ){
+		let cstruct;
+	
+		if( typeof(color) == "string" ){
+			cstruct = new Gdk.RGBA();
+			if( ! cstruct.parse( color ) )
+				throw new TypeError("Given string " + color + " cannot be parsed." );
+		}
+		else cstruct = color;
+	
+		this.actor = new Clutter.CairoTexture();
+		this.ready( width, trail_length, glow_radius, cstruct );
+		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
+		this.actor.visible = false;
+		pellet_plane.add_actor( this.actor );
+	},
+	ready: function ( width, trail_length, glow_radius, cstruct ){
+		let center_x = Math.max(glow_radius, trail_length);
+	
+		let trail_start	= center_x - trail_length;
+		let trail_end	= center_x + (width / 2);
+	
+		let glow_start = center_x - glow_radius;
+		let glow_end = center_x + glow_radius;
+	
+		let surface_width = center_x + glow_radius;
+		let surface_height = glow_radius << 1;
+	
+		this.actor['surface-width'] = surface_width;
+		this.actor['surface-height'] = surface_height;
+	
+		var context = this.actor.create();
+	
+		/* Draw Trailing with Linear Gradient */
+		let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
+		trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
+		trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
+
+			context.setSource( trailing_pat );
+			context.rectangle( trail_start, glow_radius - (width / 2),
+							   trail_end - trail_start, width );
+			context.fill( );
+
+		/* Draw glowing with Radial Gradient */
+		let glow_pat = new Cairo.RadialGradient( center_x, glow_radius, width / 2,
+												 center_x, glow_radius, glow_radius );
+		glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
+		glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
+
+			context.setSource( glow_pat );
+			context.rectangle( glow_start, 0,
+							   glow_end - glow_start, surface_height );
+			context.fill( );
+		context = null;
+	}
+}
+/* **** 3. Pellet-related functions ***** */
 
 	/** pellet_init: void
 	 * Initialize pellet management system before it would be usable.
@@ -163,7 +234,7 @@ function init( ) {
 	/* Initialize source actors */
 	src_pellets = new Array(pellet_colors.length);
 	for( let i = 0; i < pellet_colors.length ; i++ ){
-		src_pellets[i] = create_pellet_src( pellet_width,
+		src_pellets[i] = new PelletSource( pellet_width,
 											pellet_trail_length,
 											pellet_glow_radius,
 											pellet_colors[i] );
@@ -185,66 +256,6 @@ function init( ) {
 	 *				 or string			: String representation that read by
 	 *									  Gdk.RGBA.parse
 	 */
-function create_pellet_src( width, trail_length, glow_radius, color ){
-	let cstruct;
-	let result;
-	
-	if( typeof(color) == "string" ){
-		cstruct = new Gdk.RGBA();
-		if( ! cstruct.parse( color ) )
-			throw new TypeError("Given string " + color + " cannot be parsed." );
-	}
-	else cstruct = color;
-	
-	result = new Clutter.CairoTexture();
-	draw_pellet_src( width, trail_length, glow_radius, cstruct, result );
-	result.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
-	pellet_plane.add_actor( result );
-	result.visible = false;
-
-	return result;
-}
-
-function draw_pellet_src( width, trail_length, glow_radius, cstruct, texture ){
-	
-	let center_x = Math.max(glow_radius, trail_length);
-	
-	let trail_start	= center_x - trail_length;
-	let trail_end	= center_x + (width / 2);
-	
-	let glow_start = center_x - glow_radius;
-	let glow_end = center_x + glow_radius;
-	
-	let surface_width = center_x + glow_radius;
-	let surface_height = glow_radius << 1;
-	
-	texture['surface-width'] = surface_width;
-	texture['surface-height'] = surface_height;
-	
-	var context = texture.create();
-	
-	/* Draw Trailing with Linear Gradient */
-	let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
-	trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
-	trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
-
-		context.setSource( trailing_pat );
-		context.rectangle( trail_start, glow_radius - (width / 2),
-						   trail_end - trail_start, width );
-		context.fill( );
-
-	/* Draw glowing with Radial Gradient */
-	let glow_pat = new Cairo.RadialGradient( center_x, glow_radius, width / 2,
-											 center_x, glow_radius, glow_radius );
-	glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
-	glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
-
-		context.setSource( glow_pat );
-		context.rectangle( glow_start, 0,
-						   glow_end - glow_start, surface_height );
-		context.fill( );
-	context = null;
-}
 
 	/** pellet_pool_proceed: void
 	 * Proceed pellets in pool one step and recycles a pellet out of screen.
@@ -320,12 +331,12 @@ function pellet_spawn( ){
 
 	
 		// Set object bitmap
-		spawnee.actor.source = src_pellets[ rand_col ];
+		spawnee.set_source( src_pellets[ rand_col ] );
 		spawnee.actor.visible = true;
 	}
 }
 
-/* **** 3. Timeout callbacks, Signal Handlers ***** */
+/* **** 4. Timeout callbacks, Signal Handlers ***** */
 
 	/** tout_pellet_spawn: void
 	 * calls pellet_spawn() in probability of 0.3 for each timeout. (default
