@@ -7,6 +7,7 @@ Changes in 0.4
  * FIXed the bug that "It won't work when pellet-colors has less than 4 colors."
  * Added parameter "pellet-default-alpha"
  	If alpha of some colors are not specified, it will be used.
+ * Grouped pellet source initialization into a class.
 
 Changes in 0.3
  * Now, the extension is adaptive to screen dimension change.
