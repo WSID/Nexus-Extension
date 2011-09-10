@@ -284,10 +284,9 @@ function pellet_spawn( ){
 	
 	if( spawnee != null ){
 
-		let rand_num = GLib.random_int();
-
-		let rand_dir = rand_num & 3;
-		let rand_col = (rand_num & 12) >> 2;
+		let rand_dir = GLib.random_int() & 3;
+		let rand_col = GLib.random_int_range( 0, src_pellets.length );
+		global.log( "src number = " + rand_col );
 		
 		let rand_spd = GLib.random_double_range(step_min, step_max);
 		let rand_pos;
@@ -298,7 +297,7 @@ function pellet_spawn( ){
 		spawnee.actor.rotation_angle_z = rand_dir*90 ;
 	
 		// Put on starting place.
-		switch( rand_num & 3 ){
+		switch( rand_dir ){
 		case Direction.LEFT:
 			rand_pos = index_2_pos( GLib.random_int_range(0, xindexe) );
 			spawnee._step_x = -rand_spd;
@@ -332,6 +331,7 @@ function pellet_spawn( ){
 	
 		// Set object bitmap
 		spawnee.set_source( src_pellets[ rand_col ] );
+		global.log( "src number = " + rand_col );
 		spawnee.actor.visible = true;
 	}
 }
