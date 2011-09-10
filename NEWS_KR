@@ -1,8 +1,12 @@
-experimental-cairo에서의 변경점
- * 이미지 관련 코드와 파일들을 정리하고 벡터를 이용해서 그립니다.
- 	(Clutter.CairoTexture 사용)
- * 에너지 빔 모양 관련 Parameter 추가.
- 	변경은 다음 시작시에 적용됩니다.
+0.4에서의 변경점
+ * experimental-cairo 가지에서 합쳤습니다.
+ 	이미지 관련 코드와 파일들을 정리하고 벡터를 이용해서 그립니다.
+ 	  (Clutter.CairoTexture 사용)
+ 	에너지 빔 모양 관련 Parameter 추가.
+ 	  변경은 다음 시작시에 적용됩니다.
+ * FIX: "pellet-colors의 항목들이 4개보다 적을 경우, 작동하지 않는" 문제점을 수정하였습니다.
+ * "pellet-default-alpha" Parameter를 도입하였습니다.
+ 	만일 일부 색상에서 알파가 지정되지 않으면 이 값을 대신 사용합니다.
 
 0.3에서의 변경점
  * 확장은 이제 크기 변화에 적응합니다.

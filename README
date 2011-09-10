@@ -6,15 +6,6 @@ To install this extension, refer INSTALL.
 Written by WSID ( http://wsidre.egloos.com, jongsome@naver.com )
 
 ################################################################################
-0. Experimental Branch
-################################################################################
-This version of extension is under construction and introducing experimental
-things. Therefore, it may CONTAIN some BUGs. 
-In this experimental version,
- - Pellets from Cairo ( and, some parameters for color, appearance of them )
-is introduced.
-
-################################################################################
 1. Folder layout
 ################################################################################
 Nexus-Extension/README					: This file.
@@ -68,6 +59,8 @@ Parameter			= default	: description
 pellet-colors		= ....		: Array of colors. Each element is a string that
 								  represents a color, which is used to render
 								  pellets.
+pellet-default-alpha= 0.3		: Default alpha value to be used if the color
+								  has not specific alpha value.
 pellet-trail-length	= 393		: The length of trailing tail.
 pellet-width		= 14		: The width of pellet.
 pellet-glow-radius	= 21		: The radius of glowing. Note that trailing will
