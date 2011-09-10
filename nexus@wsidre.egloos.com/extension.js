@@ -44,6 +44,7 @@ var speed_max;
 var extension_path;
 	/* Pellet appearance parameters - Refer to README too. 'u' */
 var pellet_colors;
+var pellet_default_alpha;
 var pellet_trail_length;
 var pellet_width; 
 var pellet_glow_radius;
@@ -158,11 +159,20 @@ function PelletSource( width, trail_length, glow_radius, color ) {
 PelletSource.prototype = {
 	_init: function ( width, trail_length, glow_radius, color ){
 		let cstruct;
+		let is_def_alpha_applied;
 	
 		if( typeof(color) == "string" ){
 			cstruct = new Gdk.RGBA();
+			
+			is_def_alpha_applied = 			//Whether default alpha is applied.
+				(color.charAt(0) == '#') || //#rrggbb has no alpha param
+				(color.charAt(3) != 'a') ;  //rgba has alpha param
+				
 			if( ! cstruct.parse( color ) )
 				throw new TypeError("Given string " + color + " cannot be parsed." );
+			
+			if( is_def_alpha_applied )
+				cstruct.alpha = pellet_default_alpha;
 		}
 		else cstruct = color;
 	
@@ -400,6 +410,7 @@ function main(metadata) {
 	speed_max = settings.get_double('speed-max');
 	
 	pellet_colors = settings.get_strv('pellet-colors');
+	pellet_default_alpha = settings.get_double('pellet-default-alpha');
 	pellet_trail_length = settings.get_double('pellet-trail-length');
 	pellet_width = settings.get_double('pellet-width');
 	pellet_glow_radius = settings.get_double('pellet-glow-radius');

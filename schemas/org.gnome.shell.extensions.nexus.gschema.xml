@@ -58,6 +58,13 @@ Fill this setting in format which Gdk.RGBA.parse() would understand. For example
 Change on this key will take effect after restart.</description>
 		</key>
 		
+		<key type="d" name="pellet-default-alpha">
+			<default>0.3</default>
+			<range min="0" max="1"/>
+			<summary>Default alpha value for pellets</summary>
+			<description>This value is applied to pellets whose alpha wasn't specified yet.</description>
+		</key>
+		
 		<key type="d" name="pellet-trail-length">
 			<default>393</default>
 			<range min="1" max="4096"/>
