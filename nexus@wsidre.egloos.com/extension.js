@@ -51,6 +51,9 @@ var pellet_glow_radius;
 var pellet_offset_x;
 var pellet_offset_y;
 
+var pellet_directions;
+var pellet_direction_map;
+
 var step_min;
 var step_max;
 
@@ -92,6 +95,20 @@ function index_2_pos( index ) {
 	return index * pellet_width;
 }
 
+function direction_map( directions ){
+	let result = new Array();
+	
+	for( let i = 0; i < directions.length ; i++ ){
+	
+		if( Direction[ directions[i].toUpperCase() ] != undefined ){
+			let dirnum = Direction[ directions[i].toUpperCase() ];
+			if( ! ( dirnum in result ) ) result.push(dirnum);
+		}
+	}
+	if( result.length == 0 )
+		return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
+	return result;
+}
 
 /* **** 1. Pellet ***** */
 
@@ -294,9 +311,9 @@ function pellet_spawn( ){
 	
 	if( spawnee != null ){
 
-		let rand_dir = GLib.random_int() & 3;
+		let rand_dir = GLib.random_int_range( 0, pellet_direction_map.length );
+		rand_dir = pellet_direction_map[ rand_dir ];
 		let rand_col = GLib.random_int_range( 0, src_pellets.length );
-		global.log( "src number = " + rand_col );
 		
 		let rand_spd = GLib.random_double_range(step_min, step_max);
 		let rand_pos;
@@ -341,7 +358,6 @@ function pellet_spawn( ){
 	
 		// Set object bitmap
 		spawnee.set_source( src_pellets[ rand_col ] );
-		global.log( "src number = " + rand_col );
 		spawnee.actor.visible = true;
 	}
 }
@@ -385,6 +401,10 @@ function shandler_settings_change(s, k){
 		speed_max = settings.get_double('speed-max');
 		step_max = speed_max * proceed_timeout / 1000 ;
 		break;
+	case 'pellet-directions':
+		pellet_directions = settings.get_strv('pellet-directions');
+		pellet_direction_map = direction_map( pellet_directions );
+		break;
 	}
 }
 
@@ -417,10 +437,14 @@ function main(metadata) {
 	pellet_offset_x = settings.get_double('pellet-offset-x');
 	pellet_offset_y = settings.get_double('pellet-offset-y');
 	
+	pellet_directions = settings.get_strv('pellet-directions');
+	
 	step_min = speed_min * proceed_timeout / 1000 ;
 	step_max = speed_max * proceed_timeout / 1000 ;
 	
 	pellet_center_x = Math.max(pellet_trail_length, pellet_glow_radius);
+	
+	pellet_direction_map = direction_map( pellet_directions );
 	
 	extension_path = metadata.path;
 

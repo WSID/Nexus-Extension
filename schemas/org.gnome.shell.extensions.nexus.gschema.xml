@@ -98,5 +98,12 @@ Change on this key will take effect after restart.</description>
 			<summary>Offset of pellet</summary>
 			<description>Change on this key will take effect after restart.</description>
 		</key>
+		
+		<key type="as" name="pellet-directions">
+			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
+			<summary>Direction of pellets</summary>
+			<description>Pellets will have one of them. Each direction should be one of 4 directions (or ignored). (Not case-sensitive)
+If this value is empty, default value ( all of 4 directions ) will be used.</description>
+		</key>
 	</schema>
 </schemalist>
