@@ -51,7 +51,7 @@ lower value would yields smoother animation but uses more cpu time.</description
 
 
 		<key type="as" name="pellet-colors">
-			<default>['rgba(255, 15, 15, 0.3)', 'rgba(15, 255, 15, 0.3)', 'rgba(15, 15, 255, 0.3)', 'rgba(255, 255, 0, 0.3)']</default>
+			<default>['#FF2020', '#20FF20', '#2020FF', '#FFFF00']</default>
 			<summary>Color of pellets</summary>
 			<description>Color of pellets. You can put one or more colors you like to see.
 Fill this setting in format which Gdk.RGBA.parse() would understand. For example, rgba(int, int, int, 0 ~ 1 ).
