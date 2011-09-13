@@ -5,8 +5,11 @@ Changes in 0.4
  	Introduces pellet appearance parameters.
  	  Changes will take effect after restart.
  * FIXed the bug that "It won't work when pellet-colors has less than 4 colors."
+ 	Thanks rvc-2011. 'u'
  * Added parameter "pellet-default-alpha"
  	If alpha of some colors are not specified, it will be used.
+ * Added parameter "pellet-directions"
+ 	Direction of the each pellets will be set from it.
  * Grouped pellet source initialization into a class.
 
 Changes in 0.3

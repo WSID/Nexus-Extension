@@ -65,3 +65,9 @@ pellet-width		= 14		: 에너지 빔의 넓이( 또는 두께 )입니다..
 pellet-glow-radius	= 21		: 빛이 퍼지는 범위입니다. 꼬리는 빛이 퍼지지 않습니다.
 pellet-offset-x		= 0			: 에너지 빔 배치시의 offset
 pellet-offset-y		= 0			: 에너지 빔 배치시의 offset
+
+pellet-directions	= ....		: 에너지 빔이 가질 수 있는 방향입니다. 각각의 항목은 4방향
+								  중 한 방향을 나타내야 합니다. 인식되지 않은 옵션은 무시
+								  됩니다. 만일 리스트가 비어있다면 기본값 ( 4방향 )이 사
+								  용됩니다.
+								  

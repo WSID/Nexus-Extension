@@ -67,4 +67,10 @@ pellet-glow-radius	= 21		: The radius of glowing. Note that trailing will
 								  not glow.
 pellet-offset-x		= 0			: Offset of placement of pellets.
 pellet-offset-y		= 0			: Offset of placement of pellets.
+
+pellet-directions	= ....		: Directions the pellet can have. Each item
+								  should be one of 4 directions. Unrecognized
+								  items are ignored. If the list is empty,
+								  default value ( all 4 directions ) will be
+								  used.
 								  
