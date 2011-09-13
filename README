@@ -41,32 +41,46 @@ pool-capacity		= 64	: Number of prebuilt shapes. No extra creation :
 				  any of them is returned.
 				  Change on this parameter will take effect
 				  after the extension restarts.
+				  
 proceed-timeout		= 30	: Interval of animating steps. - If it has lower
 				  value, The animation would be smoother.
+				  
 spawn-probability	= 0.3	: Probability of spawning energy beam shape.
 				  1 always spawns energy beams every spawn-
 				  timeout, while 0 never spawns any of them.
+				  
 spawn-timeout		= 150	: interval of timeout of spawning. every timeout,
 				  energy beam is spawned with spawn-probability.
+				  
 speed-max		= 500	: Max speed of energy beam.
+
 speed-min		= 360	: Min speed of energy beam.
 
-Also, in this experimental version, parameters are introduced which are related
-to appearance of pellets. Changes to these keys require RESTART to take effect.
-
-Parameter			= default	: description
---------------------------------------------------------------------------------
 pellet-colors		= ....	: Array of colors. Each element is a string that
 				  represents a color, which is used to render
-				  pellets.
+				  pellets. It should be in format that be read
+				  by Gdk.RGBA.parse().
+				  Restart is required for changes to take effect.
+				  
 pellet-default-alpha	= 0.3	: Default alpha value to be used if the color
 				  has not specific alpha value.
+				  Restart is required for changes to take effect.
+				  
 pellet-trail-length	= 393	: The length of trailing tail.
+				  Restart is required for changes to take effect.
+				  
 pellet-width		= 14	: The width of pellet.
+				  Restart is required for changes to take effect.
+				  
 pellet-glow-radius	= 21	: The radius of glowing. Note that trailing will
 				  not glow.
+				  Restart is required for changes to take effect.
+				  
 pellet-offset-x		= 0	: Offset of placement of pellets.
+				  Restart is required for changes to take effect.
+				  
 pellet-offset-y		= 0	: Offset of placement of pellets.
+				  Restart is required for changes to take effect.
 
 pellet-directions	= ....	: Directions the pellet can have. Each item
 				  should be one of 4 directions. Unrecognized
