@@ -8,12 +8,12 @@ Written by WSID ( http://wsidre.egloos.com, jongsome@naver.com )
 ################################################################################
 1. Folder layout
 ################################################################################
-Nexus-Extension/README					: This file.
-Nexus-Extension/NEWS					: Update info of this extension.
-Nexus-Extension/INSTALL					: Install instructions. PLEASE READ IT!
+Nexus-Extension/README			: This file.
+Nexus-Extension/NEWS			: Update info of this extension.
+Nexus-Extension/INSTALL			: Install instructions. PLEASE READ IT!
 Nexus-Extension/nexus@wsidre.egloos.com	: Extension folder.
-Nexus-Extension/schemas					: Folder which contains a gsettings 
-										  schema which is used by this extension.
+Nexus-Extension/schemas			: Folder which contains a gsettings 
+					  schema which is used by this extension.
 										  
 
 ################################################################################
@@ -26,7 +26,7 @@ Please refer INSTALL. If the schema file isn't installed properly, the extension
 WILL BE CRUSHED and then, whole gnome shell.
 
 
-################################################################################
+###############################################################################
 3. Adjustment Parameters
 ################################################################################
 There are some parameters to tune this extension. As this uses gsettings, we can
@@ -34,43 +34,42 @@ adjust parameters via gsetting editing tools. ( eg. dconf-editor, gsettigns... )
 
 The schema the extension uses is "org.gnome.shell.extensions.nexus".
 
-Parameter			= default	: description
+Parameter		= default	: description
 --------------------------------------------------------------------------------
-pool-capacity		= 64		: Number of prebuilt shapes. No extra creation :
-								  If all of them are in use, no spawn until
-								  any of them is returned.
-								  Change on this parameter will take effect
-								  after the extension restarts.
-proceed-timeout		= 30(ms)	: Interval of animating steps. - If it has lower
-								  value, The animation would be smoother.
-spawn-probability	= 0.3		: Probability of spawning energy beam shape.
-								  1 always spawns energy beams every spawn-
-								  timeout, while 0 never spawns any of them.
-spawn-timeout		= 150		: interval of timeout of spawning. every timeout,
-								  energy beam is spawned with spawn-probability.
-speed-max			= 500		: Max speed of energy beam.
-speed-min			= 360		: Min speed of energy beam.
+pool-capacity		= 64	: Number of prebuilt shapes. No extra creation :
+				  If all of them are in use, no spawn until
+				  any of them is returned.
+				  Change on this parameter will take effect
+				  after the extension restarts.
+proceed-timeout		= 30	: Interval of animating steps. - If it has lower
+				  value, The animation would be smoother.
+spawn-probability	= 0.3	: Probability of spawning energy beam shape.
+				  1 always spawns energy beams every spawn-
+				  timeout, while 0 never spawns any of them.
+spawn-timeout		= 150	: interval of timeout of spawning. every timeout,
+				  energy beam is spawned with spawn-probability.
+speed-max		= 500	: Max speed of energy beam.
+speed-min		= 360	: Min speed of energy beam.
 
 Also, in this experimental version, parameters are introduced which are related
 to appearance of pellets. Changes to these keys require RESTART to take effect.
 
 Parameter			= default	: description
 --------------------------------------------------------------------------------
-pellet-colors		= ....		: Array of colors. Each element is a string that
-								  represents a color, which is used to render
-								  pellets.
-pellet-default-alpha= 0.3		: Default alpha value to be used if the color
-								  has not specific alpha value.
-pellet-trail-length	= 393		: The length of trailing tail.
-pellet-width		= 14		: The width of pellet.
-pellet-glow-radius	= 21		: The radius of glowing. Note that trailing will
-								  not glow.
-pellet-offset-x		= 0			: Offset of placement of pellets.
-pellet-offset-y		= 0			: Offset of placement of pellets.
+pellet-colors		= ....	: Array of colors. Each element is a string that
+				  represents a color, which is used to render
+				  pellets.
+pellet-default-alpha	= 0.3	: Default alpha value to be used if the color
+				  has not specific alpha value.
+pellet-trail-length	= 393	: The length of trailing tail.
+pellet-width		= 14	: The width of pellet.
+pellet-glow-radius	= 21	: The radius of glowing. Note that trailing will
+				  not glow.
+pellet-offset-x		= 0	: Offset of placement of pellets.
+pellet-offset-y		= 0	: Offset of placement of pellets.
 
-pellet-directions	= ....		: Directions the pellet can have. Each item
-								  should be one of 4 directions. Unrecognized
-								  items are ignored. If the list is empty,
-								  default value ( all 4 directions ) will be
-								  used.
-								  
+pellet-directions	= ....	: Directions the pellet can have. Each item
+				  should be one of 4 directions. Unrecognized
+				  items are ignored. If the list is empty,
+				  default value ( all 4 directions ) will be
+				  used.

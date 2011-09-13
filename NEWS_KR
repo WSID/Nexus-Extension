@@ -1,33 +1,33 @@
 0.4에서의 변경점
  * experimental-cairo 가지에서 합쳤습니다.
- 	이미지 관련 코드와 파일들을 정리하고 벡터를 이용해서 그립니다.
- 	  (Clutter.CairoTexture 사용)
- 	에너지 빔 모양 관련 Parameter 추가.
- 	  변경은 다음 시작시에 적용됩니다.
+    이미지 관련 코드와 파일들을 정리하고 벡터를 이용해서 그립니다.
+      (Clutter.CairoTexture 사용)
+    에너지 빔 모양 관련 Parameter 추가.
+      변경은 다음 시작시에 적용됩니다.
  * FIX: "pellet-colors의 항목들이 4개보다 적을 경우, 작동하지 않는" 문제점을 수정하였습니다.
- 	rvc-2011님께 감사드립니다.
+    rvc-2011님께 감사드립니다.
  * "pellet-default-alpha" Parameter를 도입하였습니다.
- 	만일 일부 색상에서 알파가 지정되지 않으면 이 값을 대신 사용합니다.
+    만일 일부 색상에서 알파가 지정되지 않으면 이 값을 대신 사용합니다.
  * "pellet-directions" Parameter를 추가하였습니다.
- 	이 값에서 각 에너지빔의 방향이 설정될 것입니다.
+    이 값에서 각 에너지빔의 방향이 설정될 것입니다.
  * Pellet Source를 초기화 하는 과정을 한 클래스에 묶었습니다.
 
 0.3에서의 변경점
  * 확장은 이제 크기 변화에 적응합니다.
-	(화면 회전이나 크기 변화에...)
+    (화면 회전이나 크기 변화에...)
  * GSettings을 사용합니다.
-	Parameter의 변화를 감지할 수 있습니다.
+    Parameter의 변화를 감지할 수 있습니다.
  * Actor를 창 밑으로 내리는 기능을 모듈로 만들었습니다.
-	Nexus-Extension/nexus@wsidre.egloos.com/actorwrap.js
-	그놈 쉘 상에서 라이브 윌 페이퍼를 만들고 싶으면 써도 됩니다. 'u'
+    Nexus-Extension/nexus@wsidre.egloos.com/actorwrap.js
+    그놈 쉘 상에서 라이브 윌 페이퍼를 만들고 싶으면 써도 됩니다. 'u'
  * 더이상 metadata.json에서 Parameter를 받지 않습니다.
  * 정보 관련 파일이 추가되었습니다.
-	README, INSTALL, NEWS
+    README, INSTALL, NEWS
 
 0.2에서의 변경점
  * FIX: "에너지 펠릿이 창 위로 올라가는" 버그를 수정하였습니다.
  * 세상과 만납니다..
-	( 진짜 처음으로 출시한 버전 'u' )
+    ( 진짜 처음으로 출시한 버전 'u' )
 
 0.1에서의 변경점
  * 거의 출시될 뻔했습니다. 'u'
