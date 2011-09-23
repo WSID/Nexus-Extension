@@ -18,14 +18,20 @@ const Clutter = imports.gi.Clutter;
 
 const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
+var is_setup;
+
 var wrap_plane;
 var wrap_plane_clone;
 
 var background_plane;
 var overview_plane;
 
+var shandler_restacked;
+var shandler_showing;
+var shandler_hidden;
+
 		/* **** 1. Core functions.		*/
-function init( ){
+function setup( ){
 	
 	wrap_plane = new Clutter.Group();
 	wrap_plane_clone = new Clutter.Clone( {source:wrap_plane } );
@@ -42,7 +48,7 @@ function init( ){
 	
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
-	global.screen.connect("restacked", shand_wrap_plane_lower );
+	shandler_restacked = global.screen.connect("restacked", shand_wrap_plane_lower );
 		
 		/* Monkey Patching Main.wm._switchWorkspaceDone() to add some statement,
 		 * as wrap_plane tends to raise above windows after switching work-
@@ -54,9 +60,33 @@ function init( ){
 		shand_wrap_plane_lower();
 	}
 	
-	Main.overview.connect("showing", shand_overview_showing );
-	Main.overview.connect("hidden", shand_overview_hidden );
+		/* Connect Signal handlers for wrap_plane_clone to show and
+		 * hide at right timing.
+		 */
+	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
+	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
 	
+	is_setup = true;
+}
+
+function desetup( ){
+	if( is_setup ){
+		Main.overview.disconnect( );
+		Main.overview.disconnect( );
+		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
+		global.screen.disconnect( shandler_restacked );
+
+		wrap_plane.get_parent().remove_actor( wrap_plane );
+		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
+
+		wrap_plane = null;
+		wrap_plane_clone = null;
+
+		//Releasing external ref
+		overview_plane = null;
+		background_plane = null;
+		is_setup = false;
+	}
 }
 
 	/** shand_wrap_plane_lower: void
