@@ -10,6 +10,7 @@
 
 //As it uses core operations, functions, objects,  no import.
 
+var is_setup
 
 var pool_array;				/* object[]:Array of managed objects in pool.	*/
 var pool_capacity;			/* int:		Pool capacity 						*/
@@ -23,7 +24,7 @@ var pool_item_count = 0;	/* int:		Current count of objects in use.	*/
 	 * capacity:		int:					Capacity of pool.
 	 * obj_construct:	constructor( void ):	Constructor of objects in pool.
 	 */
-function init( capacity, obj_construct ){
+function setup( capacity, obj_construct ){
 	
 	pool_array = new Array( capacity );
 	pool_capacity = capacity;
@@ -33,7 +34,14 @@ function init( capacity, obj_construct ){
 		pool_array[i] = new obj_construct( );	//<- construct pool objects.
 		pool_array[i]._pool_index = i;			//<- record pool index on obj.
 	}
-	
+	is_setup = true;
+}
+
+function unsetup( ){
+	if( is_setup ){
+		pool_array = null;
+		is_setup = false;
+	}
 }
 
 /* **** 2. Retriving and recycling objects	***** */
