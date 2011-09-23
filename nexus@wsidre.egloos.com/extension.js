@@ -59,6 +59,10 @@ var step_max;
 
 var pellet_center_x;
 
+var settings_change_id;
+var screen_width_change_id;
+var screen_height_change_id;
+
 var proceed_source_id;
 var spawning_source_id;
 	/** Direction:
@@ -244,7 +248,7 @@ PelletSource.prototype = {
 	/** pellet_init: void
 	 * Initialize pellet management system before it would be usable.
 	 */
-function init( ) {
+function setup( ) {
 	/* Initialize Plane */
 	pellet_plane = new Clutter.Group();
 	pellet_plane.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
@@ -416,8 +420,14 @@ function shandler_screen_change(){
 	yindexe = Math.ceil(sheight / pellet_width );
 }
 
-//Main
+//Main ( 3.0.x Entry Point )
 function main(metadata) {
+	init( metadata );
+	enable( metadata );
+}
+
+//init, enable, disable ( 3.1.x Entry Point )
+function init(metadata) {
 	
 	/* Getting parameters from metadata */
 	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
@@ -448,16 +458,28 @@ function main(metadata) {
 	
 	extension_path = metadata.path;
 
-	init( );
-	
+	setup( );
+
+}
+
+function enable() {
 	/* Get notify when settings is changed */
-	settings.connect('changed', shandler_settings_change );
-	global.stage.connect('notify::width', shandler_screen_change );
-	global.stage.connect('notify::height', shandler_screen_change );
+	settings_change_id = settings.connect('changed', shandler_settings_change );
+	screen_width_change_id = global.stage.connect('notify::width', shandler_screen_change );
+	screen_height_change_id = global.stage.connect('notify::height', shandler_screen_change );
 	
 	/* Adding timeout */
 	spawning_source_id =
 		Mainloop.timeout_add( spawn_timeout, tout_pellet_spawn );
 	proceed_source_id =
 		Mainloop.timeout_add( proceed_timeout , pellet_pool_proceed );
+}
+
+function disable() {
+	settings.disconnect( settings_change_id );
+	global.stage.disconnect( screen_width_change_id );
+	global.stage.disconnect( screen_height_change_id );
+	
+	Mainloop.source_remove( spawning_source_id );
+	Mainloop.source_remove( proceed_source_id );
 }
