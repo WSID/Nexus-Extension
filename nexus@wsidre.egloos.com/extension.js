@@ -32,6 +32,8 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 	const Pool = Ext.pool;
 	const ActorWrap = Ext.actorwrap;
 
+var is_setup;
+
 var settings;
 
 	/* Value of parameters - Refer to README for more information. 'u' */
@@ -256,10 +258,10 @@ function setup( ) {
 	
 	
 	/* Initialize pool */
-	Pool.init( pool_capacity, Pellet );
+	Pool.setup( pool_capacity, Pellet );
 	
 	/* wrap_plane */
-	ActorWrap.init( );
+	ActorWrap.setup( );
 	ActorWrap.add_actor( pellet_plane );
 	
 	/* Initialize source actors */
@@ -270,6 +272,20 @@ function setup( ) {
 											pellet_glow_radius,
 											pellet_colors[i] );
 	}
+}
+
+function unsetup( ) {
+		//As contents of pool depends on src_pellets, uninitialize pool first.
+	Pool.foreach( function( obj ){
+		obj.actor.get_parent().remove_actor( obj.actor );
+	} );
+	Pool.unsetup();
+
+	src_pellets = null;
+
+	ActorWrap.unsetup();
+	pellet_plane.get_parent().remove_actor( pellet_plane );
+	pellet_plane = null;
 }
 
 	/** create_pellet_src: Clutter.CairoTexture
@@ -423,12 +439,16 @@ function shandler_screen_change(){
 //Main ( 3.0.x Entry Point )
 function main(metadata) {
 	init( metadata );
-	enable( metadata );
+	enable( );
 }
 
 //init, enable, disable ( 3.1.x Entry Point )
 function init(metadata) {
-	
+
+}
+
+function enable() {
+
 	/* Getting parameters from metadata */
 	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
 	
@@ -460,9 +480,6 @@ function init(metadata) {
 
 	setup( );
 
-}
-
-function enable() {
 	/* Get notify when settings is changed */
 	settings_change_id = settings.connect('changed', shandler_settings_change );
 	screen_width_change_id = global.stage.connect('notify::width', shandler_screen_change );
@@ -473,13 +490,27 @@ function enable() {
 		Mainloop.timeout_add( spawn_timeout, tout_pellet_spawn );
 	proceed_source_id =
 		Mainloop.timeout_add( proceed_timeout , pellet_pool_proceed );
+
+	is_setup = true;
 }
 
 function disable() {
-	settings.disconnect( settings_change_id );
-	global.stage.disconnect( screen_width_change_id );
-	global.stage.disconnect( screen_height_change_id );
+	if( is_setup ){
+		settings.disconnect( settings_change_id );
+		global.stage.disconnect( screen_width_change_id );
+		global.stage.disconnect( screen_height_change_id );
 	
-	Mainloop.source_remove( spawning_source_id );
-	Mainloop.source_remove( proceed_source_id );
+		Mainloop.source_remove( spawning_source_id );
+		Mainloop.source_remove( proceed_source_id );
+
+		unsetup();
+
+		extension_path = null;
+
+		pellet_direction_map = null;
+		pellet_colors = null;
+		settings = null;
+
+		is_setup = false;
+	}
 }

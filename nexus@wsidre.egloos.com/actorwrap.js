@@ -69,7 +69,7 @@ function setup( ){
 	is_setup = true;
 }
 
-function desetup( ){
+function unsetup( ){
 	if( is_setup ){
 		Main.overview.disconnect( );
 		Main.overview.disconnect( );
@@ -79,6 +79,9 @@ function desetup( ){
 		wrap_plane.get_parent().remove_actor( wrap_plane );
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
 
+		for( let a in wrap_plane.get_children() ){
+			wrap_plane.remove_actor( a );
+		}
 		wrap_plane = null;
 		wrap_plane_clone = null;
 
