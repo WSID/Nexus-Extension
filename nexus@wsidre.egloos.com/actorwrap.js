@@ -65,22 +65,21 @@ function setup( ){
 		 */
 	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
 	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
-	
 	is_setup = true;
 }
 
 function unsetup( ){
 	if( is_setup ){
-		Main.overview.disconnect( );
-		Main.overview.disconnect( );
+		Main.overview.disconnect( shandler_showing );
+		Main.overview.disconnect( shandler_hiding );
 		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
 		global.screen.disconnect( shandler_restacked );
 
 		wrap_plane.get_parent().remove_actor( wrap_plane );
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
 
-		for( let a in wrap_plane.get_children() ){
-			wrap_plane.remove_actor( a );
+		for( let a = 0; a < wrap_plane.get_children().length; a++ ){
+			wrap_plane.remove_actor( wrap_plane.get_children()[a] );
 		}
 		wrap_plane = null;
 		wrap_plane_clone = null;

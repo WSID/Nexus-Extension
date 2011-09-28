@@ -43,7 +43,6 @@ var spawn_probability;
 var proceed_timeout;
 var speed_min;
 var speed_max;
-var extension_path;
 	/* Pellet appearance parameters - Refer to README too. 'u' */
 var pellet_colors;
 var pellet_default_alpha;
@@ -284,7 +283,6 @@ function unsetup( ) {
 	src_pellets = null;
 
 	ActorWrap.unsetup();
-	pellet_plane.get_parent().remove_actor( pellet_plane );
 	pellet_plane = null;
 }
 
@@ -475,9 +473,6 @@ function enable() {
 	pellet_center_x = Math.max(pellet_trail_length, pellet_glow_radius);
 	
 	pellet_direction_map = direction_map( pellet_directions );
-	
-	extension_path = metadata.path;
-
 	setup( );
 
 	/* Get notify when settings is changed */
@@ -504,8 +499,6 @@ function disable() {
 		Mainloop.source_remove( proceed_source_id );
 
 		unsetup();
-
-		extension_path = null;
 
 		pellet_direction_map = null;
 		pellet_colors = null;
