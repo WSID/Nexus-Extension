@@ -113,24 +113,7 @@ function PelletSource( width, trail_length, glow_radius, color ) {
 
 PelletSource.prototype = {
 	_init: function ( width, trail_length, glow_radius, color ){
-		let cstruct;
-		let is_def_alpha_applied;
-	
-		if( typeof(color) == "string" ){
-			cstruct = new Gdk.RGBA();
-			
-			is_def_alpha_applied = 			//Whether default alpha is applied.
-				(color.charAt(0) == '#') || //#rrggbb has no alpha param
-				(color.charAt(3) != 'a') ;  //rgba has alpha param
-				
-			if( ! cstruct.parse( color ) )
-				throw new TypeError("Given string " + color + " cannot be parsed." );
-			
-			if( is_def_alpha_applied )
-				cstruct.alpha = pellet_default_alpha;
-		}
-		else cstruct = color;
-	
+		let cstruct = make_cstruct( color );
 		this.actor = new Clutter.CairoTexture();
 		this.ready( width, trail_length, glow_radius, cstruct );
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
@@ -175,5 +158,39 @@ PelletSource.prototype = {
 							   glow_end - glow_start, surface_height );
 			context.fill( );
 		context = null;
+	}
+}
+
+/* **** 3. PelletPlane.		***** */
+function PelletPlane( ){
+	this._init( );
+}
+
+PelletPlane.prototype = {
+	//_sigid_screen_change_width : uint
+	//_sigid_screen_change_height : uint
+	_init: function( ){
+		this.actor = new Clutter.Group();
+		this.actor.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
+									 -pellet_width / 2 + pellet_offset_y );
+		this.swidth = global.stage.width;
+		this.sheight = global.stage.height;
+		
+		this._sigid_screen_change_width =
+			global.stage.connect('notify::width', this.shandler_screen_change );
+		this._sigid_screen_change_height =
+			global.stage.connect('notify::height', this.shandler_screen_change );
+	},
+	shandler_screen_change: function( ){
+		this.swidth = global.stage.width;
+		this.sheight = global.stage.height;
+	
+		this.xindexe = Math.ceil(this.swidth / pellet_width);
+		this.yindexe = Math.ceil(this.sheight / pellet_width );
+	},
+	finalize(){
+		global.log( "PelletPlane - finalize() called" );
+		global.stage.disconnect( this._sigid_screen_change_width );
+		global.stage.disconnect( this._sigid_screen_change_height );
 	}
 }
