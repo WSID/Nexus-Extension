@@ -127,11 +127,17 @@ PelletSource.prototype = {
 	//						blue:	double
 	//						alpha:	double
 	//					}
+	//Misc
+	//	actor: 			Clutter.CairoTexture
 
 	_init: function ( width, trail_length, glow_radius, color ){
-		let cstruct = make_cstruct( color );
+		this.width = width;
+		this.trail_length = trail_length;
+		this.glow_radius = glow_radius;
+		this.cstruct = make_cstruct( color );
 		this.actor = new Clutter.CairoTexture();
-		this.paint( width, trail_length, glow_radius, cstruct );
+		
+		this.paint();
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 		this.actor.visible = false;
 		pellet_plane.add_actor( this.actor );
@@ -151,43 +157,56 @@ PelletSource.prototype = {
 		 *				 or string			: String representation that read by
 		 *									  Gdk.RGBA.parse
 		 */
-	paint: function ( width, trail_length, glow_radius, cstruct ){
-		let center_x = Math.max(glow_radius, trail_length);
+	paint: function (){
+		let center_x = Math.max(this.glow_radius, this.trail_length);
 	
-		let trail_start	= center_x - trail_length;
-		let trail_end	= center_x + (width / 2);
+		let trail_start	= center_x - this.trail_length;
+		let trail_end	= center_x + (this.width / 2);
 	
-		let glow_start = center_x - glow_radius;
-		let glow_end = center_x + glow_radius;
+		let glow_start = center_x - this.glow_radius;
+		let glow_end = center_x + this.glow_radius;
 	
-		let surface_width = center_x + glow_radius;
-		let surface_height = glow_radius << 1;
+		let surface_width = center_x + this.glow_radius;
+		let surface_height = this.glow_radius << 1;
 	
+		this.actor.clear();
 		this.actor['surface-width'] = surface_width;
 		this.actor['surface-height'] = surface_height;
-	
-		var context = this.actor.create();
+
+		let context = this.actor.create();
 	
 		/* Draw Trailing with Linear Gradient */
 		let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
-		trailing_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, 0 );
-		trailing_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
+		trailing_pat.addColorStopRGBA( 0,	this.cstruct.red,
+											this.cstruct.green,
+											this.cstruct.blue,
+											0 );
+		trailing_pat.addColorStopRGBA( 1,	this.cstruct.red,
+											this.cstruct.green,
+											this.cstruct.blue,
+											this.cstruct.alpha );
 
 			context.setSource( trailing_pat );
-			context.rectangle( trail_start, glow_radius - (width / 2),
-							   trail_end - trail_start, width );
+			context.rectangle( trail_start, this.glow_radius - (this.width / 2),
+							   trail_end - trail_start, this.width );
 			context.fill( );
 
 		/* Draw glowing with Radial Gradient */
-		let glow_pat = new Cairo.RadialGradient( center_x, glow_radius, width / 2,
-												 center_x, glow_radius, glow_radius );
-		glow_pat.addColorStopRGBA( 0, cstruct.red, cstruct.green, cstruct.blue, cstruct.alpha );
-		glow_pat.addColorStopRGBA( 1, cstruct.red, cstruct.green, cstruct.blue, 0 );
+		let glow_pat = new Cairo.RadialGradient( center_x, this.glow_radius, this.width / 2,
+												 center_x, this.glow_radius, this.glow_radius );
+		glow_pat.addColorStopRGBA( 0,	this.cstruct.red,
+										this.cstruct.green,
+										this.cstruct.blue,
+										this.cstruct.alpha );
+		glow_pat.addColorStopRGBA( 1,	this.cstruct.red,
+										this.cstruct.green,
+										this.cstruct.blue, 0 );
 
 			context.setSource( glow_pat );
 			context.rectangle( glow_start, 0,
 							   glow_end - glow_start, surface_height );
 			context.fill( );
+		delete context;
 		context = null;
 	}
 
