@@ -74,10 +74,10 @@ Pellet.prototype = {
 		
 	},
 	
-		/** proceed: void
-		 * proceed this pellet one step
+		/** move_step: void
+		 * move this pellet one step.
 		 */
-	proceed: function( ) {
+	move_step: function( ) {
 		this.actor.move_by( this._step_x, this._step_y );
 
 	},
