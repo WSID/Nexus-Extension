@@ -23,7 +23,7 @@ Pool.prototype = {
 		this._capacity = capacity;
 		this._item_count = 0;
 	
-		for( var i = 0; i < this._capacity ; i++ ){
+		for( var i = 0; i < _capacity ; i++ ){
 			this._array[i] = new obj_constructor( );	//<- construct pool objects.
 			this._array[i]._pool_index = i;			//<- record pool index on obj.
 		}
@@ -45,8 +45,8 @@ Pool.prototype = {
 	
 		var res;
 	
-		if( this._item_count < this._capacity ){
-			res = this._array[ this._item_count++ ];
+		if( _item_count < _capacity ){
+			res = _array[ _item_count++ ];
 		}
 		else res =  null;
 	
@@ -70,9 +70,9 @@ Pool.prototype = {
 
 		var res;
 	
-		if( this._item_count + n <= this._capacity ){
-			res = this._array.slice( this._item_count, this._item_count + n );
-			this._item_count += n;
+		if( _item_count + n <= _capacity ){
+			res = _array.slice( _item_count, _item_count + n );
+			_item_count += n;
 			//global.log('  pool_item_count increased.');
 		}
 		else res =  null;
@@ -91,14 +91,14 @@ Pool.prototype = {
 		 */
 	recycle: function( obj ){
 	
-		this._item_count--;
-		if( obj._pool_index != this._item_count ){
-			this._array[ this._item_count ]._pool_index = obj._pool_index;
+		_item_count--;
+		if( obj._pool_index != _item_count ){
+			_array[ _item_count ]._pool_index = obj._pool_index;
 	
-			this._array[ obj._pool_index ] = this._array[ this._item_count ];
-			this._array[ this._item_count ] = obj;
+			_array[ obj._pool_index ] = _array[ _item_count ];
+			_array[ _item_count ] = obj;
 		
-			obj._pool_index = this._item_count;
+			obj._pool_index = _item_count;
 		}
 	
 	},
@@ -115,8 +115,8 @@ Pool.prototype = {
 		 *				:							Callback to do on every object.
 		 */
 	foreach: function( callback ){
-		for( let i = 0; i < this._item_count ; i++ ){
-			callback( this._array[i] );
+		for( let i = 0; i < _item_count ; i++ ){
+			callback( _array[i] );
 		}
 	},
 
@@ -131,7 +131,7 @@ Pool.prototype = {
 		 *				:							Callback to do on every object.
 		 */
 	foreach_full: function( callback ){
-		for( let obj in this._array ){
+		for( let obj in _array ){
 			callback( obj );
 		}
 	},
@@ -149,9 +149,9 @@ Pool.prototype = {
 	recycle_if: function( callback ){
 	
 		var i = 0;
-		while( i < this._item_count ){
-			if( callback( this._array[i] ) ){
-				recycle( this._array[i] );
+		while( i < _item_count ){
+			if( callback( _array[i] ) ){
+				recycle( _array[i] );
 				continue;
 			}
 			i++;
