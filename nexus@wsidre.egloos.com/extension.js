@@ -142,22 +142,6 @@ function unsetup( ) {
 	pellet_plane = null;
 }
 
-	/** create_pellet_src: Clutter.CairoTexture
-	 * Constructs colorized energy pellet. It uses cairo rather than images.
-	 *
-	 * width		:float				: width of pellet
-	 * trail_length	:float				: length of trailing
-	 * glow_radius	:float				: radius of glowing
-	 * color		:object{
-	 *					red		:double	: Red value of energy
-	 *					green	:double	: Green value of energy
-	 *					blue	:double	: ...
-	 *					alpha	:double	: Alpha value of energy
-	 *				 }
-	 *				 or string			: String representation that read by
-	 *									  Gdk.RGBA.parse
-	 */
-
 	/** pellet_pool_proceed: void
 	 * Proceed pellets in pool one step and recycles a pellet out of screen.
 	 */
@@ -280,14 +264,6 @@ function shandler_settings_change(s, k){
 		pellet_direction_map = direction_map( pellet_directions );
 		break;
 	}
-}
-
-function shandler_screen_change(){
-	swidth = global.stage.width;
-	sheight = global.stage.height;
-	
-	xindexe = Math.ceil(swidth / pellet_width);
-	yindexe = Math.ceil(sheight / pellet_width );
 }
 
 //Main ( 3.0.x Entry Point )

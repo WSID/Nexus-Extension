@@ -120,6 +120,21 @@ PelletSource.prototype = {
 		this.actor.visible = false;
 		pellet_plane.add_actor( this.actor );
 	},
+		/** ready: void
+		 * Constructs colorized energy pellet. It uses cairo rather than images.
+		 *
+		 * width		:float				: width of pellet
+		 * trail_length	:float				: length of trailing
+		 * glow_radius	:float				: radius of glowing
+		 * color		:object{
+		 *					red		:double	: Red value of energy
+		 *					green	:double	: Green value of energy
+		 *					blue	:double	: ...
+		 *					alpha	:double	: Alpha value of energy
+		 *				 }
+		 *				 or string			: String representation that read by
+		 *									  Gdk.RGBA.parse
+		 */
 	ready: function ( width, trail_length, glow_radius, cstruct ){
 		let center_x = Math.max(glow_radius, trail_length);
 	
@@ -194,3 +209,5 @@ PelletPlane.prototype = {
 		global.stage.disconnect( this._sigid_screen_change_height );
 	}
 }
+
+
