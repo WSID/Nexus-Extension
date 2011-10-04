@@ -1,10 +1,14 @@
 
+// Include Statements.
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const Cairo = imports.cairo;
 
 const Lang = imports.lang;
 const Main = imports.ui.main;
+
+const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
+	const Pool = Ext.pool;
 
 var is_setup;
 
@@ -31,7 +35,7 @@ const Direction = {
 function make_cstruct( color ){
 	let result;
 	let is_def_alpha_applied = false;
-	if( typeof(color) == "string" ){
+	if( typeof(color) == 'string' ){
 		result = new Gdk.RGBA();
 		
 		is_def_alpha_applied = 			//Whether default alpha is applied.
@@ -39,7 +43,7 @@ function make_cstruct( color ){
 			(result.charAt(3) != 'a') ;  //rgba has alpha param
 			
 		if( ! result.parse( color ) )
-			throw new TypeError("Given string " + result + " cannot be parsed." );
+			throw new TypeError('Given string ' + result + ' cannot be parsed.' );
 		
 		if( is_def_alpha_applied )
 			result.alpha = pellet_default_alpha;
@@ -200,6 +204,8 @@ PelletPlane.prototype = {
 	//	sheight:						int
 	//	xindexe:						int
 	//	yindexe:						int
+	//	pellet_pool:					Pool<Pellet>
+	//	pellet_srcs:					PelletSource[]
 	//Spawning Parameters
 	//	pellet_colors					Something means color[]
 	//	pellet_directions				(int from Direction)[]
@@ -214,20 +220,21 @@ PelletPlane.prototype = {
 		this.actor = new Clutter.Group();
 		this.actor.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
 									 -pellet_width / 2 + pellet_offset_y );
-		this.swidth = global.stage.width;
-		this.sheight = global.stage.height;
+		
+		config_screen_size();
 		
 		this._sigid_screen_change_width =
-			global.stage.connect('notify::width', this.shandler_screen_change );
+			global.stage.connect('notify::width', this.config_screen_size );
 		this._sigid_screen_change_height =
-			global.stage.connect('notify::height', this.shandler_screen_change );
+			global.stage.connect('notify::height', this.config_screen_size );
 	},
 	finalize(){
 		global.log( "PelletPlane - finalize() called" );
 		global.stage.disconnect( this._sigid_screen_change_width );
 		global.stage.disconnect( this._sigid_screen_change_height );
 	},
-	shandler_screen_change: function( ){
+	
+	config_screen_size: function( ){
 		this.swidth = global.stage.width;
 		this.sheight = global.stage.height;
 	
