@@ -61,8 +61,8 @@ function Pellet( ) {
 
 
 Pellet.prototype = {
-	_step_x: 0.0,
-	_step_y: 0.0,
+	//_step_x: double
+	//_step_y: double
 	
 	_init: function( ) {
 		
@@ -112,16 +112,28 @@ function PelletSource( width, trail_length, glow_radius, color ) {
 }
 
 PelletSource.prototype = {
+	//Dimension Information
+	//	width:			double
+	//	trail_length:	double
+	//	glow_radius:	double
+	//Color Information
+	//	cstruct:		object{
+	//						red:	double
+	//						green:	double
+	//						blue:	double
+	//						alpha:	double
+	//					}
+
 	_init: function ( width, trail_length, glow_radius, color ){
 		let cstruct = make_cstruct( color );
 		this.actor = new Clutter.CairoTexture();
-		this.ready( width, trail_length, glow_radius, cstruct );
+		this.paint( width, trail_length, glow_radius, cstruct );
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 		this.actor.visible = false;
 		pellet_plane.add_actor( this.actor );
 	},
-		/** ready: void
-		 * Constructs colorized energy pellet. It uses cairo rather than images.
+		/** paint: void
+		 * Paints colorized energy pellet. It uses cairo rather than images.
 		 *
 		 * width		:float				: width of pellet
 		 * trail_length	:float				: length of trailing
@@ -135,7 +147,7 @@ PelletSource.prototype = {
 		 *				 or string			: String representation that read by
 		 *									  Gdk.RGBA.parse
 		 */
-	ready: function ( width, trail_length, glow_radius, cstruct ){
+	paint: function ( width, trail_length, glow_radius, cstruct ){
 		let center_x = Math.max(glow_radius, trail_length);
 	
 		let trail_start	= center_x - trail_length;
@@ -183,13 +195,21 @@ function PelletPlane( ){
 }
 
 PelletPlane.prototype = {
-	//	swidth: int
-	//	sheight: int
-	//	xindexe: int
-	//	yindexe: int
+	//Basic Information
+	//	swidth:							int
+	//	sheight:						int
+	//	xindexe:						int
+	//	yindexe:						int
+	//Spawning Parameters
+	//	pellet_colors					Something means color[]
+	//	pellet_directions				(int from Direction)[]
+	//	pellet_offset_x					double
+	//	pellet_offset_y					double
+	//	pellet_step_x					double
+	//	pellet_step_y					double
 	//Signal Handlers' IDs
-	//	_sigid_screen_change_width : uint
-	//	_sigid_screen_change_height : uint
+	//	_sigid_screen_change_width:		uint
+	//	_sigid_screen_change_height:	uint
 	_init: function( ){
 		this.actor = new Clutter.Group();
 		this.actor.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
@@ -268,7 +288,7 @@ PelletPlane.prototype = {
 			}
 
 	
-			// Set object bitmap
+			// Set pellet source
 			spawnee.set_source( src_pellets[ rand_col ] );
 			spawnee.actor.visible = true;
 		},
