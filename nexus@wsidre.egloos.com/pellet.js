@@ -174,6 +174,7 @@ PelletSource.prototype = {
 			context.fill( );
 		context = null;
 	}
+
 }
 
 /* **** 3. PelletPlane.		***** */
@@ -182,8 +183,13 @@ function PelletPlane( ){
 }
 
 PelletPlane.prototype = {
-	//_sigid_screen_change_width : uint
-	//_sigid_screen_change_height : uint
+	//	swidth: int
+	//	sheight: int
+	//	xindexe: int
+	//	yindexe: int
+	//Signal Handlers' IDs
+	//	_sigid_screen_change_width : uint
+	//	_sigid_screen_change_height : uint
 	_init: function( ){
 		this.actor = new Clutter.Group();
 		this.actor.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
@@ -196,6 +202,11 @@ PelletPlane.prototype = {
 		this._sigid_screen_change_height =
 			global.stage.connect('notify::height', this.shandler_screen_change );
 	},
+	finalize(){
+		global.log( "PelletPlane - finalize() called" );
+		global.stage.disconnect( this._sigid_screen_change_width );
+		global.stage.disconnect( this._sigid_screen_change_height );
+	},
 	shandler_screen_change: function( ){
 		this.swidth = global.stage.width;
 		this.sheight = global.stage.height;
@@ -203,10 +214,71 @@ PelletPlane.prototype = {
 		this.xindexe = Math.ceil(this.swidth / pellet_width);
 		this.yindexe = Math.ceil(this.sheight / pellet_width );
 	},
-	finalize(){
-		global.log( "PelletPlane - finalize() called" );
-		global.stage.disconnect( this._sigid_screen_change_width );
-		global.stage.disconnect( this._sigid_screen_change_height );
+		/** pellet_spawn: void
+		 * Spawn a pellet at edge of screen from pool. If no pellet is idle, It doesn't
+		 * spawn any pellet.
+		 */
+	pellet_spawn: function( ){
+		let spawnee = Pool.retrive( );
+	
+		if( spawnee != null ){
+
+			let rand_dir = GLib.random_int_range( 0, pellet_direction_map.length );
+			rand_dir = pellet_direction_map[ rand_dir ];
+			let rand_col = GLib.random_int_range( 0, src_pellets.length );
+		
+			let rand_spd = GLib.random_double_range(step_min, step_max);
+			let rand_pos;
+	
+			// Setting basic property
+			spawnee._direction = rand_dir;
+	
+			spawnee.actor.rotation_angle_z = rand_dir*90 ;
+	
+			// Put on starting place.
+			switch( rand_dir ){
+			case Direction.LEFT:
+				rand_pos = index_2_pos( GLib.random_int_range(0, xindexe) );
+				spawnee._step_x = -rand_spd;
+				spawnee._step_y = 0;
+				spawnee.actor.x = swidth + pellet_glow_radius;
+				spawnee.actor.y = rand_pos;
+				break;
+			case Direction.RIGHT:
+				rand_pos = index_2_pos( GLib.random_int_range(0, xindexe) );
+				spawnee._step_x = rand_spd;
+				spawnee._step_y = 0;
+				spawnee.actor.x = -pellet_glow_radius;
+				spawnee.actor.y = rand_pos;
+				break;
+			case Direction.UP:
+				rand_pos = index_2_pos( GLib.random_int_range(0, yindexe) );
+				spawnee._step_x = 0;
+				spawnee._step_y = -rand_spd;
+				spawnee.actor.x = rand_pos;
+				spawnee.actor.y = sheight + pellet_glow_radius;
+				break;
+			case Direction.DOWN:
+				rand_pos = index_2_pos( GLib.random_int_range(0, yindexe) );
+				spawnee._step_x = 0;
+				spawnee._step_y = rand_spd;
+				spawnee.actor.x = rand_pos;
+				spawnee.actor.y = -pellet_glow_radius;
+				break;
+			}
+
+	
+			// Set object bitmap
+			spawnee.set_source( src_pellets[ rand_col ] );
+			spawnee.actor.visible = true;
+		},
+			/** index_2_pos: int
+			 * index:	int:	index of place.
+			 * Return:	double:	position of index.
+			 */
+		index_2_pos : function( index ) {
+			return index * pellet_width;
+		}
 	}
 }
 
