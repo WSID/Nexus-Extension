@@ -72,7 +72,6 @@ Pellet.prototype = {
 		
 		this.actor = new Clutter.Clone({});
 		
-		this.actor.set_anchor_point( pellet_center_x, pellet_glow_radius );
 		this.actor.visible = false;
 		pellet_plane.add_actor(this.actor);	//<<<
 		
@@ -87,6 +86,11 @@ Pellet.prototype = {
 	},
 	set_source: function( psrc ) {
 		this.actor.source = psrc.actor;
+		this.sync_anchor
+	},
+	sync_anchor: function() {
+		this.actor.set_anchor_point( this.actor.source.anchor_x,
+									 this.actor.source.anchor_y );
 	}
 };
 
