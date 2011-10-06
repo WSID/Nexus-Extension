@@ -119,16 +119,38 @@ PelletSource.prototype = {
 	//	actor: 			Clutter.CairoTexture
 
 	_init: function ( width, trail_length, glow_radius, color ){
-		this.width = width;
-		this.trail_length = trail_length;
-		this.glow_radius = glow_radius;
 		this.cstruct = make_cstruct( color );
 		this.actor = new Clutter.CairoTexture();
 		
-		this.paint();
-		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
+		this.set_dimension( width, trail_length, glow_radius );
+		
 		this.actor.visible = false;
 		pellet_plane.add_actor( this.actor );
+	},
+	
+	set_width: function( width ){
+		this.set_dimension( width, this.trail_length, this.glow_radius );
+	},
+	
+	set_trail_length: function( trail_length ){
+		this.set_dimension( this.width, trail_length, this.glow_radius );
+	},
+	
+	set_glow_radius: function( glow_radius ){
+		this.set_dimension( this.width, this.trail_length, glow_radius );
+	},
+	
+	set_dimension: function( width, trail_length, glow_radius ){
+		this.width = width;
+		this.trail_length = trail_length;
+		this.glow_radius = glow_radius;
+		this.paint();
+		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
+	},
+	
+	set_color: function( color ){
+		this.cstruct = make_cstruct( color );
+		this.paint();
 	},
 		/** paint: void
 		 * Paints colorized energy pellet. It uses cairo rather than images.
