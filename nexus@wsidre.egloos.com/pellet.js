@@ -6,16 +6,6 @@ const Cairo = imports.cairo;
 
 const Lang = imports.lang;
 
-var is_setup;
-
-var src_pellets;
-
-var pellet_colors;
-var pellet_default_alpha;
-var pellet_trail_length;
-var pellet_width; 
-var pellet_glow_radius;
-
 	/** Direction:
 	 * Enum about direction.
 	 * Right direction is 0 and values are increases in clockwise order.
@@ -216,7 +206,6 @@ PelletSource.prototype = {
 			context.rectangle( glow_start, 0,
 							   glow_end - glow_start, surface_height );
 			context.fill( );
-		delete context;
 		context = null;
 	}
 
