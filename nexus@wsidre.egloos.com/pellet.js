@@ -228,6 +228,9 @@ function PelletPlane( ){
 }
 
 PelletPlane.prototype = {
+	//TODO: add add_pellet_source()
+
+
 	//Basic Information
 	//	swidth:							int
 	//	sheight:						int
@@ -283,7 +286,44 @@ PelletPlane.prototype = {
 		this.pellet_step_max = _max;
 	},
 	
-	set_pellet_
+	set_pellet_width: function( width ){
+		this.pellet_width = width;
+		for( let psrc in this._pellet_srcs ){
+			psrc.set_width( width );
+		}
+	},
+	
+	set_pellet_trail_length: function( trail_length ){
+		this.pellet_trail_length = trail_length;
+		for( let psrc in this._pellet_srcs ){
+			psrc.set_trail_length( trail_length );
+		}
+	},
+	
+	set_pellet_glow_radius: function( glow_radius ){
+		this.pellet_glow_radius = glow_radius;
+		for( let psrc in this._pellet_srcs ){
+			psrc.set_glow_radius( glow_radius );
+		}
+	},
+	
+	set_pellet_colors: function( colors ){
+		let i;
+	
+		this.pellet_colors = colors;
+		while( colors.length < this._pellet_srcs ){
+			this._pellet_srcs.pop();
+		}
+		for( i = 0; i < this._pellet_srcs.length ; i++ ){
+			this._pellet_srcs[i].set_color( colors[i] );
+		}
+		for(; i < colors.length; i++ ){
+			this._pellet_srcs.push( new PelletSource( this.pellet_width,
+													  this.pellet_trail_length,
+													  this.pellet_glow_radius,
+													  colors[i] ) );
+		}
+	},
 	
 	config_screen_size: function( ){
 		this.swidth = global.stage.width;
