@@ -68,22 +68,6 @@ const Direction = {
 //Pellet and background plane.
 var pellet_plane;			/* for background */
 
-
-function direction_map( directions ){
-	let result = new Array();
-	
-	for( let i = 0; i < directions.length ; i++ ){
-	
-		if( Direction[ directions[i].toUpperCase() ] != undefined ){
-			let dirnum = Direction[ directions[i].toUpperCase() ];
-			if( ! ( dirnum in result ) ) result.push(dirnum);
-		}
-	}
-	if( result.length == 0 )
-		return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
-	return result;
-}
-
 /* **** 3. Pellet-related functions ***** */
 
 	/** pellet_init: void

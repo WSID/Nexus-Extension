@@ -220,6 +220,9 @@ PelletPlane.prototype = {
 	//	offset_y:						double
 	//	pellet_step_min:				double
 	//	pellet_step_max:				double
+	//	pellet_width:					double
+	//	pellet_trail_length:			double
+	//	pellet_glow_radius:				double
 	//Internal Processing variable
 	//	_pellet_center_x:				double
 	//Signal Handlers' IDs
@@ -257,6 +260,8 @@ PelletPlane.prototype = {
 		this.pellet_step_min = _min;
 		this.pellet_step_max = _max;
 	},
+	
+	set_pellet_
 	
 	config_screen_size: function( ){
 		this.swidth = global.stage.width;
@@ -344,6 +349,21 @@ PelletPlane.prototype = {
 			res = ( x <= -(this.pellet_center_x) ) || ( (this.swidth + this.pellet_center_x ) <= x ) ||
 				  ( y <= -(this.pellet_center_x) ) || ( (this.sheight + this.pellet_center_x ) <= y);
 			return res;
+		}
+		
+		direction_map: function( directions ){
+			let result = new Array();
+	
+			for( let i = 0; i < directions.length ; i++ ){
+	
+				if( Direction[ directions[i].toUpperCase() ] != undefined ){
+					let dirnum = Direction[ directions[i].toUpperCase() ];
+					if( ! ( dirnum in result ) ) result.push(dirnum);
+				}
+			}
+			if( result.length == 0 )
+				return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
+			return result;
 		}
 	}
 }
