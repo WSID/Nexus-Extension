@@ -85,21 +85,6 @@ Pellet.prototype = {
 		this.actor.move_by( this._step_x, this._step_y );
 
 	},
-	
-		/** is_out: bool
-		 * Returns:	bool:	Whether it is out of screen and getting more farther
-		 *					the screen.
-		 */
-	is_out: function( ) {
-		let x = this.actor.x;
-		let y = this.actor.y;
-		
-		let res;
-		
-		res = ( x <= -pellet_center_x ) || ( (swidth + pellet_center_x ) <= x ) ||
-			  ( y <= -pellet_center_x ) || ( (sheight + pellet_center_x ) <= y);
-		return res;
-	},
 	set_source: function( psrc ) {
 		this.actor.source = psrc.actor;
 	}
@@ -116,6 +101,9 @@ function PelletSource( width, trail_length, glow_radius, color ) {
 }
 
 PelletSource.prototype = {
+	//TODO(0.6): drop using Clutter.CairoTexture.create() 
+	//			 Instead use draw signal
+	
 	//Dimension Information
 	//	width:			double
 	//	trail_length:	double
@@ -226,20 +214,20 @@ PelletPlane.prototype = {
 	//	pellet_pool:					Pool<Pellet>
 	//	pellet_srcs:					PelletSource[]
 	//Spawning Parameters
-	//	pellet_colors					Something means color[]
-	//	pellet_directions				(int from Direction)[]
-	//	pellet_offset_x					double
-	//	pellet_offset_y					double
-	//	pellet_step_x					double
-	//	pellet_step_y					double
+	//	pellet_colors:					Something means color[]
+	//	pellet_directions:				(int from Direction)[]
+	//	offset_x:						double
+	//	offset_y:						double
+	//	pellet_step_min:				double
+	//	pellet_step_max:				double
+	//Internal Processing variable
+	//	_pellet_center_x:				double
 	//Signal Handlers' IDs
 	//	_sigid_screen_change_width:		uint
 	//	_sigid_screen_change_height:	uint
 	_init: function( ){
 		this.actor = new Clutter.Group();
-		this.actor.set_anchor_point( -pellet_width / 2 + pellet_offset_x,
-									 -pellet_width / 2 + pellet_offset_y );
-		
+		this.set_pellet_offset( offset_x, offset_y);
 		config_screen_size();
 		
 		this._sigid_screen_change_width =
@@ -251,6 +239,23 @@ PelletPlane.prototype = {
 		global.log( "PelletPlane - finalize() called" );
 		global.stage.disconnect( this._sigid_screen_change_width );
 		global.stage.disconnect( this._sigid_screen_change_height );
+	},
+	
+	set_pellet_directions: function( directions ){
+		...
+	}
+	
+	set_pellet_offset: function( offset_x, offset_y ){
+		let half_width = this.pellet_width / 2;
+		this.offset_x = ( ( offset_x + half_width ) % this.width ) - half_width;
+		this.offset_y = ( ( offset_y + half_width ) % this.width ) - half_width;
+		this.actor.set_anchor_point( -half_width + this.offset_x,
+									 -half_width + this.offset_y );
+	},
+	
+	set_pellet_step: function( _min, _max ){
+		this.pellet_step_min = _min;
+		this.pellet_step_max = _max;
 	},
 	
 	config_screen_size: function( ){
@@ -324,8 +329,21 @@ PelletPlane.prototype = {
 			 */
 		index_2_pos : function( index ) {
 			return index * pellet_width;
+		},
+		
+			/** is_out: bool
+			 * Returns:	bool:	Whether it is out of screen and getting more farther
+			 *					the screen.
+			 */
+		is_out: function( child ) {
+			let x = child.actor.x;
+			let y = child.actor.y;
+		
+			let res;
+		
+			res = ( x <= -(this.pellet_center_x) ) || ( (this.swidth + this.pellet_center_x ) <= x ) ||
+				  ( y <= -(this.pellet_center_x) ) || ( (this.sheight + this.pellet_center_x ) <= y);
+			return res;
 		}
 	}
 }
-
-
