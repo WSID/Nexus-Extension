@@ -270,7 +270,8 @@ PelletPlane.prototype = {
 	},
 	
 	set_pellet_directions: function( directions ){
-		...
+		this.pellet_directions = this.direction_map( directions );
+		
 	}
 	
 	set_pellet_offset: function( offset_x, offset_y ){
