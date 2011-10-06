@@ -255,7 +255,7 @@ PelletPlane.prototype = {
 	//	_sigid_screen_change_height:	uint
 	_init: function( ){
 		this.actor = new Clutter.Group();
-		this.set_pellet_offset( offset_x, offset_y);
+		this.set_pellet_offset( offset_x, offset_y );
 		config_screen_size();
 		
 		this._sigid_screen_change_width =
@@ -332,6 +332,16 @@ PelletPlane.prototype = {
 	
 		this.xindexe = Math.ceil(this.swidth / pellet_width);
 		this.yindexe = Math.ceil(this.sheight / pellet_width );
+	},
+	
+	do_step: function(){
+		pellet_pool.foreach( function( obj ){
+			obj.move_step( );
+		} );
+	
+		pellet_pool.recycle_if( function( obj ){
+			return this.is_out( obj );
+		} );
 	},
 		/** pellet_spawn: void
 		 * Spawn a pellet at edge of screen from pool. If no pellet is idle, It doesn't
