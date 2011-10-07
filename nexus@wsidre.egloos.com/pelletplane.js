@@ -9,6 +9,7 @@ const Main = imports.ui.main;
 
 const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 	const Pool = Ext.pool;
+	const PelletModule = Ext.pellet;
 
 /* **** 3. PelletPlane.		***** */
 function PelletPlane( ){
@@ -120,7 +121,10 @@ PelletPlane.prototype = {
 	},
 	
 	set_pellet_default_alpha: function( alpha ){
-		//Not Implemented.
+		this.pellet_default_alpha;
+		for( let psrc in this._pellet_srcs ){
+			psrc.set_default_alpha( alpha );
+		}
 	},
 	
 	set_pellet_directions: function( directions ){
@@ -228,48 +232,46 @@ PelletPlane.prototype = {
 				spawnee.actor.y = -this.pellet_glow_radius;
 				break;
 			}
-
-	
 			// Set pellet source
 			spawnee.set_source( this._pellet_srcs[ rand_col ] );
 			spawnee.actor.visible = true;
-		},
-			/** index_2_pos: int
-			 * index:	int:	index of place.
-			 * Return:	double:	position of index.
-			 */
-		index_2_pos : function( index ) {
-			return index * pellet_width;
-		},
-		
-			/** is_out: bool
-			 * Returns:	bool:	Whether it is out of screen and getting more farther
-			 *					the screen.
-			 */
-		is_out: function( child ) {
-			let x = child.actor.x;
-			let y = child.actor.y;
-		
-			let res;
-		
-			res = ( x <= -(this.pellet_center_x) ) || ( (this.swidth + this.pellet_center_x ) <= x ) ||
-				  ( y <= -(this.pellet_center_x) ) || ( (this.sheight + this.pellet_center_x ) <= y);
-			return res;
-		},
-		
-		direction_map: function( directions ){
-			let result = new Array();
-	
-			for( let i = 0; i < directions.length ; i++ ){
-	
-				if( Direction[ directions[i].toUpperCase() ] != undefined ){
-					let dirnum = Direction[ directions[i].toUpperCase() ];
-					if( ! ( dirnum in result ) ) result.push(dirnum);
-				}
-			}
-			if( result.length == 0 )
-				return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
-			return result;
 		}
+	},
+		/** index_2_pos: int
+		 * index:	int:	index of place.
+		 * Return:	double:	position of index.
+		 */
+	index_2_pos : function( index ) {
+		return index * pellet_width;
+	},
+	
+		/** is_out: bool
+		 * Returns:	bool:	Whether it is out of screen and getting more farther
+		 *					the screen.
+		 */
+	is_out: function( child ) {
+		let x = child.actor.x;
+		let y = child.actor.y;
+	
+		let res;
+	
+		res = ( x <= -(this.pellet_center_x) ) || ( (this.swidth + this.pellet_center_x ) <= x ) ||
+			  ( y <= -(this.pellet_center_x) ) || ( (this.sheight + this.pellet_center_x ) <= y);
+		return res;
+	},
+	
+	direction_map: function( directions ){
+		let result = new Array();
+
+		for( let i = 0; i < directions.length ; i++ ){
+
+			if( Direction[ directions[i].toUpperCase() ] != undefined ){
+				let dirnum = Direction[ directions[i].toUpperCase() ];
+				if( ! ( dirnum in result ) ) result.push(dirnum);
+			}
+		}
+		if( result.length == 0 )
+			return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
+		return result;
 	}
 }

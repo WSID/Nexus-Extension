@@ -17,6 +17,15 @@ const Direction = {
 	UP		: 3
 }
 
+function is_have_alpha_part( color ){
+	if( typeof(color) == 'string' ){
+		return 	(result.charAt(0) != '#') && //#rrggbb has no alpha param
+				(result.charAt(3) == 'a') ;  //rgba has alpha param
+	}
+	else{
+		return color.alpha != null;
+	}
+}
 
 function make_cstruct( color ){
 	let result;
@@ -24,15 +33,9 @@ function make_cstruct( color ){
 	if( typeof(color) == 'string' ){
 		result = new Gdk.RGBA();
 		
-		is_def_alpha_applied = 			//Whether default alpha is applied.
-			(result.charAt(0) == '#') || //#rrggbb has no alpha param
-			(result.charAt(3) != 'a') ;  //rgba has alpha param
-			
 		if( ! result.parse( color ) )
 			throw new TypeError('Given string ' + result + ' cannot be parsed.' );
-		
-		if( is_def_alpha_applied )
-			result.alpha = pellet_default_alpha;
+
 		return result;
 	}
 	else return color;
@@ -95,21 +98,28 @@ PelletSource.prototype = {
 	//			 Instead use draw signal
 	
 	//Dimension Information
-	//	width:			double
-	//	trail_length:	double
-	//	glow_radius:	double
+	//	width:				double
+	//	trail_length:		double
+	//	glow_radius:		double
 	//Color Information
-	//	cstruct:		object{
-	//						red:	double
-	//						green:	double
-	//						blue:	double
-	//						alpha:	double
-	//					}
+	//	cstruct:			object{
+	//							red:	double
+	//							green:	double
+	//							blue:	double
+	//							alpha:	double
+	//						}
+	//	default_alpha:		double
+	//	use_defalut_alpha:	bool
 	//Misc
-	//	actor: 			Clutter.CairoTexture
+	//	actor: 				Clutter.CairoTexture
 
-	_init: function ( width, trail_length, glow_radius, color ){
+	_init: function ( width, trail_length, glow_radius, color, default_alpha ){
+		this.default_alpha = default_alpha;
 		this.cstruct = make_cstruct( color );
+		this.use_defalut_alpha = is_def_alpha_applied( color );
+		if( this.use_defalut_alpha ){
+			this.cstruct.alpha = default_alpha;
+		}
 		this.actor = new Clutter.CairoTexture();
 		
 		this.set_dimension( width, trail_length, glow_radius );
@@ -140,7 +150,19 @@ PelletSource.prototype = {
 	
 	set_color: function( color ){
 		this.cstruct = make_cstruct( color );
+		this.use_defalut_alpha = is_def_alpha_applied( color );
+		if( this.use_defalut_alpha ){
+			this.cstruct.alpha = default_alpha;
+		}
 		this.paint();
+	},
+	
+	set_default_alpha: function( alpha ){
+		this.default_alpha = alpha;
+		if( this.use_defalut_alpha ){
+			this.cstruct.alpha = alpha;
+			this.paint();
+		}
 	},
 		/** paint: void
 		 * Paints colorized energy pellet. It uses cairo rather than images.
