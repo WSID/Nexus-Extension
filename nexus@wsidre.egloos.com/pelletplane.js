@@ -54,22 +54,34 @@ PelletPlane.prototype = {
 	//	_sigid_screen_change_height:	uint
 	//	_srcid_spawning:				uint
 	//	_srcid_stepping:				uint
-	_init: function( ){
+	_init: function( pool_capacity ){
 		this.actor = new Clutter.Group();
 		this.set_offset( offset_x, offset_y );
 		config_screen_size();
-		
+	},
+	finalize: function(){
+		global.log( "PelletPlane - finalize() called" );
+		this.stop();
+	},
+	start: function(){
 		this._sigid_screen_change_width =
 			global.stage.connect('notify::width', this.config_screen_size );
 		this._sigid_screen_change_height =
 			global.stage.connect('notify::height', this.config_screen_size );
+		
+		this._srcid_spawning =
+			Mainloop.add_timeout( this.spawn_timeout, this.pellet_spawn );
+		this._srcid_stepping =
+			Mainloop.add_timeout( this.step_duration, this.do_step );
+		this._started = true;
 	},
-	finalize(){
-		global.log( "PelletPlane - finalize() called" );
+	stop: function(){
+		Mainloop.source_remove( this._srcid_spawning );
+		Mainloop.source_remove( this._srcid_stepping );
 		global.stage.disconnect( this._sigid_screen_change_width );
 		global.stage.disconnect( this._sigid_screen_change_height );
+		this._started = false;
 	},
-	
 	set_offset: function( offset_x, offset_y ){
 		let half_width = this.pellet_width / 2;
 		this.offset_x = ( ( offset_x + half_width ) % this.width ) - half_width;
@@ -92,12 +104,12 @@ PelletPlane.prototype = {
 		this.spawn_probability = probability;
 	},
 	
-	set_pellet_speed_min( speed ){
+	set_pellet_speed_min: function( speed ){
 		this.pellet_speed_min = speed;
 		this.config_step();
 	},
 	
-	set_pellet_speed_max( speed ){
+	set_pellet_speed_max: function( speed ){
 		this.pellet_speed_max = speed;
 		this.config_step();
 	},
