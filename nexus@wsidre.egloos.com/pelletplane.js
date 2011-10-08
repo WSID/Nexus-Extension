@@ -164,6 +164,15 @@ PelletPlane.prototype = {
 		}
 	},
 	
+	set_pellet_dimension: function( width, trail_length, glow_radius ){
+		this.pellet_width = width;
+		this.pellet_trail_length = trail_length;
+		this.pellet_glow_radius = glow_radius;
+		for( let psrc in this._pellet_srcs ){
+			psrc.set_dimension( width, trail_length, glow_radius );
+		}
+	}
+	
 	config_screen_size: function( ){
 		this.swidth = global.stage.width;
 		this.sheight = global.stage.height;
