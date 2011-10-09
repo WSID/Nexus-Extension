@@ -44,6 +44,7 @@ PelletPlane.prototype = {
 	//	_yindexe:						int
 	//	_pellet_step_min:				double
 	//	_pellet_step_max:				double
+	//	_settings:						Gio.Settings
 	//State
 	//	_started:						bool
 	//Signal Handlers' IDs
@@ -51,6 +52,7 @@ PelletPlane.prototype = {
 	//	_sigid_screen_change_height:	uint
 	//	_srcid_spawning:				uint
 	//	_srcid_stepping:				uint
+	//	_sigid_settings:				uint
 	_init: function( settings ){
 		//Initialize actor
 		this.actor = new Clutter.Group();
@@ -59,6 +61,11 @@ PelletPlane.prototype = {
 		this.pool_capacity = settings.get_int('pool-capacity');
 		this._pellet_pool = new Pool.Pool( pool_capacity, PelletModule.Pellet );
 		this._pellet_srcs = new Array(0);
+		
+		//Initialize _settings
+		this._settings = settings;
+		this._sigid_settings =
+			this._settings.connect('changed', this.sigh_settings_changed);
 		
 		//Initialize pellet parameters
 		this.set_pellet_speed_min( settings.get_double('pellet-speed-min') );
@@ -103,6 +110,7 @@ PelletPlane.prototype = {
 		Mainloop.source_remove( this._srcid_stepping );
 		global.stage.disconnect( this._sigid_screen_change_width );
 		global.stage.disconnect( this._sigid_screen_change_height );
+		
 		this._started = false;
 	},
 	set_offset: function( offset_x, offset_y ){
@@ -115,13 +123,20 @@ PelletPlane.prototype = {
 	
 	set_step_duration: function( duration ){
 		this.step_duration = duration;
-		this.config_step();
+		
+		if( this._started ){
+			Mainloop.source_remove( this._srcid_stepping );
+			this._srcid_stepping = Mainloop.add_timeout( this.do_step );
+		}
 	},
 	
 	set_spawn_timeout: function( timeout ){
-		Mainloop.source_remove( this._srcid_spawning );
 		this.spawn_timeout = timeout;
-		this._srcid_spawning = Mainloop.add_timeout( this.do_step );
+		
+		if( this._started ){
+			Mainloop.source_remove( this._srcid_spawning );
+			this._srcid_spawning = Mainloop.add_timeout( this.pellet_spawn );
+		}
 	},
 	set_spawn_probability: function( probability ){
 		this.spawn_probability = probability;
@@ -197,7 +212,7 @@ PelletPlane.prototype = {
 			psrc.set_dimension( width, trail_length, glow_radius );
 		}
 		this.config_step();
-	}
+	},
 	
 	config_screen_size: function( ){
 		this.swidth = global.stage.width;
@@ -221,6 +236,49 @@ PelletPlane.prototype = {
 		}
 	},
 	
+	sigh_settings_changed: function( settings, key ){
+		switch( key ){
+		case 'pellet-offset-x':
+			this.set_offset( settings.get_double( key ), this.offset_y );
+			break;
+		case 'pellet-offset-y':
+			this.set_offset( this.offset_x, settings.get_double( key ) );
+			break;
+		case 'proceed_timeout':
+			this.set_step_duration( settings.get_int( key ) );
+			break;
+		case 'spawn_timeout':
+			this.set_spawn_timeout( settings.get_int( key ) );
+			break;
+		case 'spawn_probability':
+			this.set_spawn_probability( settings.get_double( key ) );
+			break;
+		case 'speed-min':
+			this.set_pellet_speed_min( settings.get_double( key ) );
+			break;
+		case 'speed-max':
+			this.set_pellet_speed_max( settings.get_double( key ) );
+			break;
+		case 'pellet-colors':
+			this.set_pellet_colors( settings.get_strv( key ) );
+			break;
+		case 'pellet-default_alpha':
+			this.set_pellet_default_alpha( settings.get_double( key ) );
+			break;
+		case 'pellet-width':
+			this.set_pellet_width( settings.get_double( key ) );
+			break;
+		case 'pellet-trail_length':
+			this.set_pellet_trail_length( settings.get_double( key ) );
+			break;
+		case 'pellet-glow-radius':
+			this.set_pellet_glow_radius( settings.get_double( key ) );
+			break;
+		case 'pellet-directions':
+			this.set_pellet_directions( settings.get_strv( key ) );
+			break;
+		}
+	}
 	
 	set_pellet_step: function( _min, _max ){
 		this._pellet_step_min = _min;
