@@ -278,7 +278,7 @@ PelletPlane.prototype = {
 			this.set_pellet_directions( settings.get_strv( key ) );
 			break;
 		}
-	}
+	},
 	
 	set_pellet_step: function( _min, _max ){
 		this._pellet_step_min = _min;
