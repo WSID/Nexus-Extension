@@ -17,12 +17,10 @@ function PelletPlane( ){
 }
 
 PelletPlane.prototype = {
-	//TODO: add add_pellet_source()
-
-
 	//Basic Information
 	//	swidth:							int
 	//	sheight:						int
+	//	actor:							Clutter.Group
 	//Plane Parameters
 	//	pool_capacity:					int
 	//	offset_x:						double
@@ -44,7 +42,6 @@ PelletPlane.prototype = {
 	//	_pellet_srcs:					PelletSource[]
 	//	_xindexe:						int
 	//	_yindexe:						int
-	//	_pellet_center_x:				double
 	//	_pellet_step_min:				double
 	//	_pellet_step_max:				double
 	//State
@@ -54,10 +51,34 @@ PelletPlane.prototype = {
 	//	_sigid_screen_change_height:	uint
 	//	_srcid_spawning:				uint
 	//	_srcid_stepping:				uint
-	_init: function( pool_capacity ){
+	_init: function( settings ){
+		//Initialize actor
 		this.actor = new Clutter.Group();
-		this.set_offset( offset_x, offset_y );
-		config_screen_size();
+
+		//Initialize _pellet_pool and _pellet_srcs		
+		this.pool_capacity = settings.get_int('pool-capacity');
+		this._pellet_pool = new Pool.Pool( pool_capacity, PelletModule.Pellet );
+		this._pellet_srcs = new Array(0);
+		
+		//Initialize pellet parameters
+		this.set_pellet_speed_min( settings.get_double('pellet-speed-min') );
+		this.set_pellet_speed_max( settings.get_double('pellet-speed-max') );
+		
+		this.set_pellet_dimension(	settings.get_double('pellet-width'),
+									settings.get_double('pellet-trail-length'),
+									settings.get_double('pellet-glow-radius') );
+		this.set_pellet_default_alpha( settings.get_double('pellet-default-alpha') );
+		this.set_pellet_colors(	settings.get_strv('pellet-colors') );
+		this.set_pellet_directions(	settings.get_strv('pellet-directions') );
+		
+		//Initialize plane paramters
+		this.set_offset(	settings.get_double('pellet-offset-x'),
+							settings.get_double('pellet-offset-y') );
+		this.set_step_duration( settings.get_int('proceed-timeout') );
+		this.set_spawn_timeout( settings.get_int('spawn-timeout') );
+		this.set_spawn_probability( settings.get_double('spawn-probability') );
+		
+		this.config_screen_size();
 	},
 	finalize: function(){
 		global.log( "PelletPlane - finalize() called" );
@@ -73,9 +94,11 @@ PelletPlane.prototype = {
 			Mainloop.add_timeout( this.spawn_timeout, this.pellet_spawn );
 		this._srcid_stepping =
 			Mainloop.add_timeout( this.step_duration, this.do_step );
+		this.actor.visible = true;
 		this._started = true;
 	},
 	stop: function(){
+		this.actor.visible = false;
 		Mainloop.source_remove( this._srcid_spawning );
 		Mainloop.source_remove( this._srcid_stepping );
 		global.stage.disconnect( this._sigid_screen_change_width );
@@ -128,7 +151,8 @@ PelletPlane.prototype = {
 			this._pellet_srcs.push( new PelletSource( this.pellet_width,
 													  this.pellet_trail_length,
 													  this.pellet_glow_radius,
-													  colors[i] ) );
+													  colors[i],
+													  this.default_alpha ) );
 		}
 	},
 	
@@ -148,6 +172,7 @@ PelletPlane.prototype = {
 		for( let psrc in this._pellet_srcs ){
 			psrc.set_width( width );
 		}
+		this.config_step();
 	},
 	
 	set_pellet_trail_length: function( trail_length ){
@@ -171,19 +196,29 @@ PelletPlane.prototype = {
 		for( let psrc in this._pellet_srcs ){
 			psrc.set_dimension( width, trail_length, glow_radius );
 		}
+		this.config_step();
 	}
 	
 	config_screen_size: function( ){
 		this.swidth = global.stage.width;
 		this.sheight = global.stage.height;
-	
-		this.xindexe = Math.ceil(this.swidth / pellet_width);
-		this.yindexe = Math.ceil(this.sheight / pellet_width );
+		
+		if( this.pellet_width != undefined ){
+			this.xindexe = Math.ceil(this.swidth / this.pellet_width);
+			this.yindexe = Math.ceil(this.sheight / this.pellet_width );
+		}
 	},
 	
 	config_step: function( ){
-		this._pellet_step_min = this.pellet_speed_min * duration / 1000;
-		this._pellet_step_max = this.pellet_speed_max * duration / 1000;
+		if( (this.pellet_speed_min != undefined ) &&
+			(this.pellet_speed_max != undefined ) &&
+			(this.step_duration != undefined ) ){
+			
+			this._pellet_step_min =
+				this.pellet_speed_min * this.step_duration / 1000;
+			this._pellet_step_max =
+				this.pellet_speed_max * this.step_duration / 1000;
+		}
 	},
 	
 	
