@@ -47,14 +47,13 @@ function enable() {
 
 	/* Getting parameters from metadata */
 	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
-	
 	pellet_plane = new PelletPlane.PelletPlane( settings );
 	
 	ActorWrap.setup();
-	ActorWrap.add_actor( pellet_plane );
+	ActorWrap.add_actor( pellet_plane.actor );
 	
 	pellet_plane.start();
-	
+
 	is_setup = true;
 }
 
@@ -64,7 +63,7 @@ function disable() {
 	
 		ActorWrap.unsetup();
 		
-		pellet_plane = null;
+		delete pellet_plane;
 		
 		is_setup = false;
 	}

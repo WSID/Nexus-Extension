@@ -3,6 +3,7 @@
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const Cairo = imports.cairo;
+const Gdk = imports.gi.Gdk;
 
 const Lang = imports.lang;
 
@@ -19,8 +20,8 @@ const Direction = {
 
 function is_have_alpha_part( color ){
 	if( typeof(color) == 'string' ){
-		return 	(result.charAt(0) != '#') && //#rrggbb has no alpha param
-				(result.charAt(3) == 'a') ;  //rgba has alpha param
+		return 	(color.charAt(0) != '#') && //#rrggbb has no alpha param
+				(color.charAt(3) == 'a') ;  //rgba has alpha param
 	}
 	else{
 		return color.alpha != null;
@@ -29,7 +30,6 @@ function is_have_alpha_part( color ){
 
 function make_cstruct( color ){
 	let result;
-	let is_def_alpha_applied = false;
 	if( typeof(color) == 'string' ){
 		result = new Gdk.RGBA();
 		
@@ -58,12 +58,7 @@ Pellet.prototype = {
 	//_step_y: double
 	
 	_init: function( ) {
-		
 		this.actor = new Clutter.Clone({});
-		
-		this.actor.visible = false;
-		pellet_plane.add_actor(this.actor);	//<<<
-		
 	},
 	
 		/** move_step: void
@@ -75,7 +70,7 @@ Pellet.prototype = {
 	},
 	set_source: function( psrc ) {
 		this.actor.source = psrc.actor;
-		this.sync_anchor
+		this.sync_anchor();
 	},
 	sync_anchor: function() {
 		this.actor.set_anchor_point( this.actor.source.anchor_x,
@@ -89,8 +84,8 @@ Pellet.prototype = {
 	/** PelletSource:
 	 * visual source of pellet.
 	 */
-function PelletSource( width, trail_length, glow_radius, color ) {
-	this._init( width, trail_length, glow_radius, color );
+function PelletSource( width, trail_length, glow_radius, color, default_alpha ) {
+	this._init( width, trail_length, glow_radius, color, default_alpha );
 }
 
 PelletSource.prototype = {
@@ -115,9 +110,10 @@ PelletSource.prototype = {
 
 	_init: function ( width, trail_length, glow_radius, color, default_alpha ){
 		this.default_alpha = default_alpha;
+		this.color = color;
 		this.cstruct = make_cstruct( color );
-		this.use_defalut_alpha = is_def_alpha_applied( color );
-		if( this.use_defalut_alpha ){
+		this.use_default_alpha = !is_have_alpha_part( color );
+		if( this.use_default_alpha ){
 			this.cstruct.alpha = default_alpha;
 		}
 		this.actor = new Clutter.CairoTexture();
@@ -125,7 +121,6 @@ PelletSource.prototype = {
 		this.set_dimension( width, trail_length, glow_radius );
 		
 		this.actor.visible = false;
-		pellet_plane.add_actor( this.actor );
 	},
 	
 	set_width: function( width ){
@@ -144,24 +139,25 @@ PelletSource.prototype = {
 		this.width = width;
 		this.trail_length = trail_length;
 		this.glow_radius = glow_radius;
-		this.paint();
+		this._paint();
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	},
 	
 	set_color: function( color ){
+		if( this.color == color ) return;
 		this.cstruct = make_cstruct( color );
-		this.use_defalut_alpha = is_def_alpha_applied( color );
+		this.use_defalut_alpha = ! is_have_alpha_part( color );
 		if( this.use_defalut_alpha ){
-			this.cstruct.alpha = default_alpha;
+			this.cstruct.alpha = this.default_alpha;
 		}
-		this.paint();
+		this._paint();
 	},
 	
 	set_default_alpha: function( alpha ){
 		this.default_alpha = alpha;
-		if( this.use_defalut_alpha ){
+		if( this.use_default_alpha ){
 			this.cstruct.alpha = alpha;
-			this.paint();
+			this._paint();
 		}
 	},
 		/** paint: void
@@ -179,7 +175,7 @@ PelletSource.prototype = {
 		 *				 or string			: String representation that read by
 		 *									  Gdk.RGBA.parse
 		 */
-	paint: function (){
+	_paint: function (){
 		let center_x = Math.max(this.glow_radius, this.trail_length);
 	
 		let trail_start	= center_x - this.trail_length;
@@ -191,7 +187,7 @@ PelletSource.prototype = {
 		let surface_width = center_x + this.glow_radius;
 		let surface_height = this.glow_radius << 1;
 	
-		this.actor.clear();
+		//this.actor.clear();
 		this.actor['surface-width'] = surface_width;
 		this.actor['surface-height'] = surface_height;
 

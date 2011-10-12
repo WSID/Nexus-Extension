@@ -42,7 +42,6 @@ Pool.prototype = {
 		 *			null:						(None of them is abailiable)
 		 */
 	retrive: function( ){
-	
 		var res;
 	
 		if( this._item_count < this._capacity ){
@@ -131,8 +130,8 @@ Pool.prototype = {
 		 *				:							Callback to do on every object.
 		 */
 	foreach_full: function( callback ){
-		for( let obj in this._array ){
-			callback( obj );
+		for( let i = 0; i < this._capacity ; i++ ){
+			callback( this._array[i] );
 		}
 	},
 
@@ -151,7 +150,7 @@ Pool.prototype = {
 		var i = 0;
 		while( i < this._item_count ){
 			if( callback( this._array[i] ) ){
-				recycle( this._array[i] );
+				this.recycle( this._array[i] );
 				continue;
 			}
 			i++;
