@@ -49,6 +49,10 @@ PelletPlane.prototype = {
 	//	_pellet_step_max:				double
 	//	_is_postponed_color_init:		bool
 	//	_settings:						Gio.Settings
+	
+	//	_sxend:
+	//	_syend:
+	
 	//State
 	//	_started:						bool
 	//Signal Handlers' IDs
@@ -78,22 +82,22 @@ PelletPlane.prototype = {
 		this._pellet_srcs = new Array(0);
 		
 		//Initialize pellet parameters
-		this.set_pellet_speed_min( this._settings.get_double('speed-min') );
-		this.set_pellet_speed_max( this._settings.get_double('speed-max') );
+		this.set_pellet_speed_min(	this._settings.get_double('speed-min') );
+		this.set_pellet_speed_max(	this._settings.get_double('speed-max') );
 		
 		this.set_pellet_dimension(	this._settings.get_double('pellet-width'),
 									this._settings.get_double('pellet-trail-length'),
 									this._settings.get_double('pellet-glow-radius') );
-		this.set_pellet_default_alpha( this._settings.get_double('pellet-default-alpha') );
+		this.set_pellet_default_alpha(	this._settings.get_double('pellet-default-alpha') );
 		this.set_pellet_colors(	this._settings.get_strv('pellet-colors') );
 		this.set_pellet_directions(	this._settings.get_strv('pellet-directions') );
 		
 		//Initialize plane paramters
 		this.set_offset(	this._settings.get_double('pellet-offset-x'),
 							this._settings.get_double('pellet-offset-y') );
-		this.set_step_duration( this._settings.get_int('proceed-timeout') );
-		this.set_spawn_timeout( this._settings.get_int('spawn-timeout') );
-		this.set_spawn_probability( this._settings.get_double('spawn-probability') );
+		this.set_step_duration(	this._settings.get_int('proceed-timeout') );
+		this.set_spawn_timeout(	this._settings.get_int('spawn-timeout') );
+		this.set_spawn_probability(	this._settings.get_double('spawn-probability') );
 		
 		this.config_screen_size();
 	},
@@ -130,10 +134,16 @@ PelletPlane.prototype = {
 	},
 	set_offset: function( offset_x, offset_y ){
 		let half_width = this.pellet_width / 2;
-		this.offset_x = ( ( offset_x + half_width ) % this.pellet_width ) - half_width;
-		this.offset_y = ( ( offset_y + half_width ) % this.pellet_width ) - half_width;
-		this.actor.set_anchor_point( this.pellet_width + this.offset_x,
-									 this.pellet_width + this.offset_y );
+		this.offset_x = ( ( offset_x + half_width ) % this.pellet_width );
+		this.offset_y = ( ( offset_y + half_width ) % this.pellet_width );
+		this.offset_x = this.offset_x < 0 ?
+						this.offset_x + this.pellet_width :
+						this.offset_x;
+		this.offset_y = this.offset_y < 0 ?
+						this.offset_y + this.pellet_width :
+						this.offset_y;
+		this.actor.set_anchor_point( this.offset_x,
+									 this.offset_y );
 	},
 	
 	set_step_duration: function( duration ){
@@ -253,6 +263,17 @@ PelletPlane.prototype = {
 			this.xindexe = Math.ceil(this.swidth / this.pellet_width);
 			this.yindexe = Math.ceil(this.sheight / this.pellet_width );
 		}
+		this.config_screen_end();
+	},
+	
+	config_screen_end: function( ){
+		if( this.swidth != undefined &&
+			this.sheight != undefined &&
+			this._pellet_center_x != undefined ){
+			
+			this._sxend = this.swidth + this._pellet_center_x;
+			this._syend = this.sheight + this._pellet_center_x;
+		}
 	},
 	
 	config_step: function( ){
@@ -273,6 +294,7 @@ PelletPlane.prototype = {
 			
 			this._pellet_center_x = Math.max(this.pellet_trail_length,
 											this.pellet_glow_radius);
+			this.config_screen_end();
 		}
 	},
 	
@@ -329,9 +351,7 @@ PelletPlane.prototype = {
 		this._pellet_pool.foreach( function( obj ){
 			obj.move_step( );
 		} );
-		this._pellet_pool.recycle_if( Lang.bind(this, function( obj ){
-			return this.is_out( obj );
-		} ) );
+		this._pellet_pool.recycle_if( this.is_out.bind( this ) );
 		return true;
 	},
 		/** pellet_spawn: void
@@ -350,6 +370,7 @@ PelletPlane.prototype = {
 		
 			let rand_spd = GLib.random_double_range(this._pellet_step_min, this._pellet_step_max);
 			let rand_pos;
+
 
 			// Setting basic property
 	
@@ -412,8 +433,8 @@ PelletPlane.prototype = {
 		let res;
 		
 		//TODO: remove_out this code
-		res = ( x <= -(this._pellet_center_x) ) || ( (this.swidth + this._pellet_center_x ) <= x ) ||
-			  ( y <= -(this._pellet_center_x) ) || ( (this.sheight + this._pellet_center_x ) <= y);
+		res = ( x <= -(this._pellet_center_x) ) || ( (this._sxend ) <= x ) ||
+			  ( y <= -(this._pellet_center_x) ) || ( (this._syend ) <= y);
 		return res;
 	},
 	
