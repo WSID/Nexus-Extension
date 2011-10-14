@@ -186,10 +186,11 @@ PelletSource.prototype = {
 	
 		let surface_width = center_x + this.glow_radius;
 		let surface_height = this.glow_radius << 1;
-	
-		//this.actor.clear();
+		
 		this.actor['surface-width'] = surface_width;
 		this.actor['surface-height'] = surface_height;
+		this.actor.width = surface_width;
+		this.actor.height = surface_height;
 
 		let context = this.actor.create();
 	

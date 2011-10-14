@@ -10,20 +10,19 @@ const Main = imports.ui.main;
 
 const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 	const Pool = Ext.pool;
-	const PelletModule = Ext.pellet;
+	const Pellet = Ext.pellet;
 
-const Direction = PelletModule.Direction
+const Direction = Pellet.Direction
 
-/* **** 3. PelletPlane.		***** */
 function PelletPlane( settings ){
 	this._init( settings );
 }
 
 PelletPlane.prototype = {
 	//Basic Information
-	//	swidth:							int
-	//	sheight:						int
-	//	actor:							Clutter.Group
+	//	swidth:							int				: screen width.
+	//	sheight:						int				: screen height.
+	//	actor:							Clutter.Group	: real actor of it.
 	//Plane Parameters
 	//	pool_capacity:					int
 	//	offset_x:						double
@@ -49,10 +48,8 @@ PelletPlane.prototype = {
 	//	_pellet_step_max:				double
 	//	_is_postponed_color_init:		bool
 	//	_settings:						Gio.Settings
-	
 	//	_sxend:
 	//	_syend:
-	
 	//State
 	//	_started:						bool
 	//Signal Handlers' IDs
@@ -61,6 +58,7 @@ PelletPlane.prototype = {
 	//	_srcid_spawning:				uint
 	//	_srcid_stepping:				uint
 	//	_sigid_settings:				uint
+	
 	_init: function( settings ){
 		//Initialize actors
 		this.actor = new Clutter.Group();
@@ -69,19 +67,18 @@ PelletPlane.prototype = {
 		this._settings = settings;
 		this._sigid_settings =
 			this._settings.connect('changed',
-				Lang.bind( this, this.sigh_settings_changed ) );
+				this.sigh_settings_changed.bind( this ) );
 		
 		//Initialize _pellet_pool and _pellet_srcs
 		this.pool_capacity = settings.get_int('pool-capacity');
-		this._pellet_pool = new Pool.Pool( this.pool_capacity, PelletModule.Pellet );
+		this._pellet_pool = new Pool.Pool( this.pool_capacity, Pellet.Pellet );
 		this._pellet_pool.foreach_full( Lang.bind(this, function( obj ){
 			obj.actor.visible = false;
 			this.actor.add_actor( obj.actor );
 		} ) );
-		
 		this._pellet_srcs = new Array(0);
 		
-		//Initialize pellet parameters
+		//Set pellet parameters from settings
 		this.set_pellet_speed_min(	this._settings.get_double('speed-min') );
 		this.set_pellet_speed_max(	this._settings.get_double('speed-max') );
 		
@@ -92,7 +89,7 @@ PelletPlane.prototype = {
 		this.set_pellet_colors(	this._settings.get_strv('pellet-colors') );
 		this.set_pellet_directions(	this._settings.get_strv('pellet-directions') );
 		
-		//Initialize plane paramters
+		//Set plane paramters from settings
 		this.set_offset(	this._settings.get_double('pellet-offset-x'),
 							this._settings.get_double('pellet-offset-y') );
 		this.set_step_duration(	this._settings.get_int('proceed-timeout') );
@@ -145,7 +142,7 @@ PelletPlane.prototype = {
 		this.actor.set_anchor_point( this.offset_x,
 									 this.offset_y );
 	},
-	
+
 	set_step_duration: function( duration ){
 		this.step_duration = duration;
 		
@@ -186,23 +183,28 @@ PelletPlane.prototype = {
 			this._is_postponed_color_init = true;
 			return;
 		}
+			//If count of the color is decreased,
+			// drop some of pellet sources to have same count of it.
 		while( colors.length < this._pellet_srcs ){
 			this._pellet_srcs.pop();
 		}
+			//Setting color of pellet sources.
 		for( i = 0; i < this._pellet_srcs.length ; i++ ){
 			this._pellet_srcs[i].set_color( colors[i] );
 		}
+			//If count of the color is increased,
+			// add new pellet sources to have same count of it.
 		for(; i < colors.length; i++ ){
 			let pellet_src =
-				new PelletModule.PelletSource(this.pellet_width,
-											  this.pellet_trail_length,
-											  this.pellet_glow_radius,
-											  colors[i],
-											  this.pellet_default_alpha );
+				new Pellet.PelletSource(this.pellet_width,
+										this.pellet_trail_length,
+										this.pellet_glow_radius,
+										colors[i],
+										this.pellet_default_alpha );
 			this._pellet_srcs.push( pellet_src );
 			
+				//Add pellet source to realize it.
 			this.actor.add_actor( pellet_src.actor );
-
 			pellet_src._paint();
 			pellet_src.actor.visible = false;
 		}
@@ -445,7 +447,8 @@ PelletPlane.prototype = {
 			let dirstr =  directions[i].toUpperCase();
 			if( dirstr in Direction ){
 				let dirnum = Direction[ dirstr ];
-				if( result.indexOf( dirnum ) != -1 ) result.push(dirnum);
+					//If dirnum isn't exist in result, add it
+				if( result.indexOf( dirnum ) == -1 ) result.push(dirnum);
 			}
 		}
 		if( result.length == 0 ){
