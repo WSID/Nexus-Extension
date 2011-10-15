@@ -38,7 +38,7 @@ in Clutter 1.0 but deprecated in 1.8.
 
 
 ################################################################################
-5. Adjustment Parameters
+4. Adjustment Parameters
 ################################################################################
 There are some parameters to tune this extension. As this uses gsettings, we can
 adjust parameters via gsetting editing tools. ( eg. dconf-editor, gsettigns... )
