@@ -146,7 +146,6 @@ Pool.prototype = {
 		 *				:							Callback to do on every object.
 		 */
 	recycle_if: function( callback ){
-	
 		var i = 0;
 		while( i < this._item_count ){
 			if( callback( this._array[i] ) ){

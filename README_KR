@@ -10,76 +10,84 @@ Text encoding is UTF-8.
 ################################################################################
 1. 폴더 구조
 ################################################################################
-Nexus-Extension/README					: 이 파일의 영문 버전.
-Nexus-Extension/NEWS					: 이 확장의 업데이트 정보.
-Nexus-Extension/INSTALL					: 설치법. 반드시 읽어주세요!!
+Nexus-Extension/README			: 이 파일의 영문 버전.
+Nexus-Extension/NEWS			: 이 확장의 업데이트 정보.
+Nexus-Extension/INSTALL			: 설치법. 반드시 읽어주세요!!
 Nexus-Extension/nexus@wsidre.egloos.com	: 확장이 담긴 폴더입니다.
-Nexus-Extension/schemas					: 이 확장에서 사용하는 GSettings Schema가
-										  담긴 폴더입니다.
+Nexus-Extension/schemas			: 이 확장에서 사용하는 GSettings Schema
+					  가 담긴 폴더입니다.
 
 
 ################################################################################
 2. Nexus-Extension/schemas
 ################################################################################
-0.3이후부터는 metadata.json에 추가하던 값 대신 GIO의 GSettings을 사용하게 됩니다. 따라서
-GSettings을 위한 적절한 schema 파일이 필요합니다.
-반드시 INSTALL을 참고하세요. schema 파일이 적절히 설치되지 않으면, 확장이 다운 될 것이며, 전체
-그놈 쉘을 다운시키게 됨니다.
+0.3이후부터는 metadata.json에 추가하던 값 대신 GIO의 GSettings을 사용하게 됩니다.
+따라서 GSettings을 위한 적절한 schema 파일이 필요합니다.
+반드시 INSTALL을 참고하세요. schema 파일이 적절히 설치되지 않으면, 확장이 다운
+될 것이며, 전체 그놈 쉘을 다운시키게 됨니다.
 
 
 ################################################################################
 3. 조절 가능한 Parameter
 ################################################################################
-이 확장을 조절할 수 있는 Parameter들이 있습니다. 이 확장이 GSettings을 사용하게 되므로,
-gsettings을 편집가능한 도구로 조절가능합니다. ( 예: dconf-editor, gsettings... )
+이 확장을 조절할 수 있는 Parameter들이 있습니다. 이 확장이 GSettings을 사용하게
+되므로, gsettings을 편집가능한 도구로 조절가능합니다.
+	( 예: dconf-editor, gsettings... )
 
-이 확장이 사용하는 Schema는 "org.gnome.shell.extensions.nexus"입니다.
+이 확장이 사용하는 Schema는 "org.gnome.shell.extensions.nexus"이며, 경로는
+"/org/gnome/shell/extensions/nexus"입니다.
 
 Parameter		= 기본값	: 설명
 --------------------------------------------------------------------------------
-pool-capacity		= 64	: 사전 생성된 모양의 갯수. 추가 생성은 없습니다. : 모두
-				  사용중에 있을 경우, 모양이 다시 돌아올때까지, 모양이 생
-				  성되지 않습니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pool-capacity		= 64	: 미리 만들어지고 사용 가능한 에너지 빔의 개수입
+				  니다. 풀의 확장이 이루어 지지 않습니다. 따라서
+				  모든 에너지 빔이 사용되는 동안 에너지 빔을
+				  Spawn하지 않습니다. 에너지 빔은 화면 바깥으로
+				  나가면 다음 사용을 위해 회수됩니다.
+				  변경은 재시작시 적용됩니다.
 				  
-proceed-timeout		= 30	: 애니메이션의 단계의 시간 간격입니다. 낮은 값을 가지면,
-				  부드러운 애니메이션을 가지게 됩니다.
+proceed-timeout		= 30	: 애니메이션 단계 사이의 시간간격입니다. 모든 에
+				  너지 빔은 매 단계마다 움직입니다. '프레임 시간
+				  '으로 이해될 수 있습니다.
 				  
-spawn-probability	= 0.3	: 매 spawn-timeout마다 모양이 생성될 확률을 나타냅니다.
-				  1은 매번 항상 생성되는 것을 의미하며, 0은 생성이 되지
-				  않음을 의미합니다.
+spawn-probability	= 0.3	: 매번의 Spawning Timeout마다 Spawn을 수행하는
+				  확률입니다. 0은 Spawn을 수행하지 않음을 의미하
+				  며, 1은 매 Timeout마다 Spawn을 수행함을 의미합
+				  니다.
 				  
-spawn-timeout		= 150	: 생성의 시간 간격을 의미합니다. 매 timeout마다 에너지 빔
-				  모양이 spawn-probability의 확률로 생성됩니다.
+spawn-timeout		= 150	: Spawning Timeout의 시간 간격입니다. 각각의
+				  Timeout마다 에너지 빔이 spawn-probability의 확
+				  률로 Spawn 됩니다.
 				  
-speed-max		= 500	: 에너지 빔의 최대 속도.
+speed-max		= 500	: 에너지 빔의 최대 속도입니다.
 
-speed-min		= 360	: 에너지 빔의 최소 속도.
+speed-min		= 360	: 에너지 빔의 최소 속도입니다.
 
-pellet-colors		= ....	: 색깔의 배열입니다. 각 항목은 색상을 나타내는 문자열입니다.
-				  이 문자열은 Gdk.RGBA.parse()에 의해 읽힐 수 있는 형식
-				  을 지녀야 합니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-colors		= ....	: 에너지 빔이 사용할 색상들입니다. 각 에너지 빔
+				  들은 랜덤하게 이 색상들 중에서 하나를 선택하여
+				  사용합니다. 형식은 gdk_rgba_parse()가 읽을 수
+				  있는 형식이어야 합니다. ( 예를 들면,
+				  rgba( 0, 0, 255, 1) 또는 #0000FF 또는 blue )
 				  
-pellet-default-alpha	= 0.3	: 색상의 알파값이 지정되지 않을 경우 사용되는 값입니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-default-alpha	= 0.3	: 알파값이 정해지지 않은 색상에 대해 사용되는 알
+				  파값입니다. 알파 값을 가진 색상은 해당 알파 값
+				  을 사용합니다. 0은 투명, 1은 불투명을 의미합니
+				  다.
 
-pellet-trail-length	= 393	: 꼬리의 길이입니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-trail-length	= 393	: 에너지 빔의 꼬리 길이입니다.
 
-pellet-width		= 14	: 에너지 빔의 넓이( 또는 두께 )입니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-width		= 14	: 에너지 빔의 폭입니다.
 
-pellet-glow-radius	= 21	: 빛이 퍼지는 범위입니다. 꼬리는 빛이 퍼지지 않습니다.
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-glow-radius	= 21	: 에너지 빔의 빛나는 효과의 반지름입니다.
 
-pellet-offset-x		= 0	: 에너지 빔 배치시의 offset
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-offset-x		= 0	: 에너지 빔 평면의 Offset입니다. Offset (0, 0)에
+				  서 제일 왼쪽의 에너지 빔은 화면 왼쪽에 붙어서
+				  이동합니다.
 
-pellet-offset-y		= 0	: 에너지 빔 배치시의 offset
-				  이 Parameter의 변화는 확장이 재시작 할 때 적용됩니다.
+pellet-offset-y		= 0	: 에너지 빔 평면의 Offset입니다. Offset (0, 0)에
+				  서 제일 상단의 에너지 빔은 화면 상단에 붙어서
+				  이동합니다.
 
-pellet-directions	= ....	: 에너지 빔이 가질 수 있는 방향입니다. 각각의 항목은 4방향
-				  중 한 방향을 나타내야 합니다. 인식되지 않은 옵션은 무시
-				  됩니다. 만일 리스트가 비어있다면 기본값 ( 4방향 )이 사
-				  용됩니다.
+pellet-directions	= ....	: 에너지 빔의 방향입니다. 각각의 방향은 반드시
+				  'UP', 'DOWN', 'LEFT', 'RIGHT' 중 하나이어야 합
+				  니다. 유효하지 않은 값은 무시됩니다.

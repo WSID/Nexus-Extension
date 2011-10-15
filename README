@@ -26,7 +26,7 @@ Please refer INSTALL. If the schema file isn't installed properly, the extension
 WILL BE CRUSHED and then, whole gnome shell.
 
 
-###############################################################################
+################################################################################
 3. Adjustment Parameters
 ################################################################################
 There are some parameters to tune this extension. As this uses gsettings, we can
@@ -36,54 +36,55 @@ The schema the extension uses is "org.gnome.shell.extensions.nexus".
 
 Parameter		= default	: description
 --------------------------------------------------------------------------------
-pool-capacity		= 64	: Number of prebuilt shapes. No extra creation :
-				  If all of them are in use, no spawn until
-				  any of them is returned.
-				  Change on this parameter will take effect
-				  after the extension restarts.
+pool-capacity		= 64	: Count of prebuilt and usable pellets. There
+				  will not be pool extension. Therefore, no
+				  spawning pellet when all of them are in use,
+				  unless any of them gets out of screen and
+				  recycled for next use.
+				   Changes on this requires restart to take
+				  effect.
 				  
-proceed-timeout		= 30	: Interval of animating steps. - If it has lower
-				  value, The animation would be smoother.
+proceed-timeout		= 30	: Time interval of each step animation. Every
+				  pellet moves in each stepping. It may be
+				  considered as 'frame duration'.
 				  
-spawn-probability	= 0.3	: Probability of spawning energy beam shape.
-				  1 always spawns energy beams every spawn-
-				  timeout, while 0 never spawns any of them.
+spawn-probability	= 0.3	: Spawning probability of each spawning timeout.
+				  0 means no spawning, 1 means spawn pellet
+				  every timeout.
 				  
-spawn-timeout		= 150	: interval of timeout of spawning. every timeout,
-				  energy beam is spawned with spawn-probability.
+spawn-timeout		= 150	: Time interval of each spawning timeout. For
+				  each spawning timeout, pellet spawning will
+				  occur in probability of spawn-probability.
 				  
-speed-max		= 500	: Max speed of energy beam.
+speed-max		= 500	: Maximum speed of pellet.
 
-speed-min		= 360	: Min speed of energy beam.
+speed-min		= 360	: Minimum speed of pellet.
 
-pellet-colors		= ....	: Array of colors. Each element is a string that
-				  represents a color, which is used to render
-				  pellets. It should be in format that be read
-				  by Gdk.RGBA.parse().
-				  Restart is required for changes to take effect.
+pellet-colors		= ....	: The colors which pellets will use. Each pellet
+				  will use one of the colors randomly. The
+				  format of color should be understood by
+				  gdk_rgba_parse(). ( For example,
+				  rgba( 0, 0, 255, 1 ) or #0000FF or blue )
 				  
-pellet-default-alpha	= 0.3	: Default alpha value to be used if the color
-				  has not specific alpha value.
-				  Restart is required for changes to take effect.
+pellet-default-alpha	= 0.3	: Default Alpha which is used for colors without
+				  alpha value. For colors with their alpha
+				  values, they will use their own. 0 means
+				  transparent, 1 means opaque.
 				  
-pellet-trail-length	= 393	: The length of trailing tail.
-				  Restart is required for changes to take effect.
+pellet-trail-length	= 393	: Trail length of pellet.
 				  
-pellet-width		= 14	: The width of pellet.
-				  Restart is required for changes to take effect.
+pellet-width		= 14	: Width of pellet.
 				  
-pellet-glow-radius	= 21	: The radius of glowing. Note that trailing will
-				  not glow.
-				  Restart is required for changes to take effect.
+pellet-glow-radius	= 21	: Glowing radius of pellet.
 				  
-pellet-offset-x		= 0	: Offset of placement of pellets.
-				  Restart is required for changes to take effect.
+pellet-offset-x		= 0	: Offset of pellet plane. Leftmost pellet will
+				  stick to left border of screen for offset (0,
+				  0)
 				  
-pellet-offset-y		= 0	: Offset of placement of pellets.
-				  Restart is required for changes to take effect.
+pellet-offset-y		= 0	: Offset of pellet plane. Topmost pellet will
+				  stick to top border of screen for offset (0,
+				  0)
 
-pellet-directions	= ....	: Directions the pellet can have. Each item
-				  should be one of 4 directions. Unrecognized
-				  items are ignored. If the list is empty,
-				  default value ( all 4 directions ) will be
-				  used.
+pellet-directions	= ....	: Directions of pellets. Each direction must be
+				  one of 'UP', 'DOWN', 'LEFT', 'RIGHT'. Invalid
+				  values will be ignored.

@@ -1,4 +1,3 @@
-
 // Include Statements.
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;

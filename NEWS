@@ -1,3 +1,11 @@
+Changes in 0.5
+ * Change in internal structure for maintainance convenience.
+    Added PelletPlane prototype.
+    Addde PelletSource prototype.
+ * FIXed the bug that "Pellet goes only few of pellet-direction."
+ * Now, parameters about appearance can be changed without restart.
+    But it takes seconds.
+
 Changes in 0.4
  * Merged experimental-cairo branch
     Dropped image-based stuff and now paints using vector.
