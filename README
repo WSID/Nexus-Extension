@@ -27,7 +27,18 @@ WILL BE CRUSHED and then, whole gnome shell.
 
 
 ################################################################################
-3. Adjustment Parameters
+3. PREALARM for DROPPING SUPPORT for gnome shell 3.0.x in next version
+################################################################################
+In 0.6, the next version, the extension will use functions from Clutter 1.8.
+Therefore, it wouldn't be used with gnome shell 3.0.x which uses Clutter 1.0.
+In other words, it will drop support for gnome shell 3.0.x in next version.
+
+In this version, 0.5, the extension uses Clutter.CairoTexture.create() which is
+in Clutter 1.0 but deprecated in 1.8.
+
+
+################################################################################
+5. Adjustment Parameters
 ################################################################################
 There are some parameters to tune this extension. As this uses gsettings, we can
 adjust parameters via gsetting editing tools. ( eg. dconf-editor, gsettigns... )
