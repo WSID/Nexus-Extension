@@ -27,6 +27,17 @@ WILL BE CRUSHED and then, whole gnome shell.
 
 
 ################################################################################
+3. How to enable it?
+################################################################################
+In gnome shell 3.2.x, You can enable an extension via activation in
+gnome-tweak-tool after installing it and restarting gnome shell. You can make
+the extension WORKING by putting mouse on message tray or etc, though this
+extension not seems to be activated. Doing this will SHOW the extension.
+This is because of delayed destruction of CairoContext, which uploads drawing on
+it to Clutter.CairoContext.
+
+
+################################################################################
 3. PREALARM for DROPPING SUPPORT for gnome shell 3.0.x in next version
 ################################################################################
 In 0.6, the next version, the extension will use functions from Clutter 1.8.

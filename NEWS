@@ -2,6 +2,8 @@ Changes in 0.5
  * Change in internal structure for maintainance convenience.
     Added PelletPlane prototype.
     Addde PelletSource prototype.
+ * Targetted gnome shell version is 3.2
+    I've not tested it on 3.0 but it may work on there too.
  * FIXed the bug that "Pellet goes only few of pellet-direction."
  * Now, parameters about appearance can be changed without restart.
     But it takes seconds.
