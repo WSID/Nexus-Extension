@@ -231,7 +231,6 @@ PelletPlane.prototype = {
 	},
 	
 	set_pellet_trail_length: function( trail_length ){
-		global.log("set_pellet_trail_length called");
 		this.pellet_trail_length = trail_length;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
 			this._pellet_srcs[i].set_trail_length( trail_length );
