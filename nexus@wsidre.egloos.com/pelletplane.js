@@ -325,13 +325,13 @@ PelletPlane.prototype = {
 		case 'pellet-colors':
 			this.set_pellet_colors( settings.get_strv( key ) );
 			break;
-		case 'pellet-default_alpha':
+		case 'pellet-default-alpha':
 			this.set_pellet_default_alpha( settings.get_double( key ) );
 			break;
 		case 'pellet-width':
 			this.set_pellet_width( settings.get_double( key ) );
 			break;
-		case 'pellet-trail_length':
+		case 'pellet-trail-length':
 			this.set_pellet_trail_length( settings.get_double( key ) );
 			break;
 		case 'pellet-glow-radius':
