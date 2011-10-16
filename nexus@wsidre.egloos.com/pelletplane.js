@@ -227,6 +227,7 @@ PelletPlane.prototype = {
 			this._pellet_srcs[i].set_width( width );
 		}
 		this.config_step();
+		this.config_screen_size();
 	},
 	
 	set_pellet_trail_length: function( trail_length ){
