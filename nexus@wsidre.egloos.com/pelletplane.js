@@ -307,13 +307,13 @@ PelletPlane.prototype = {
 		case 'pellet-offset-y':
 			this.set_offset( this.offset_x, settings.get_double( key ) );
 			break;
-		case 'proceed_timeout':
+		case 'proceed-timeout':
 			this.set_step_duration( settings.get_int( key ) );
 			break;
-		case 'spawn_timeout':
+		case 'spawn-timeout':
 			this.set_spawn_timeout( settings.get_int( key ) );
 			break;
-		case 'spawn_probability':
+		case 'spawn-probability':
 			this.set_spawn_probability( settings.get_double( key ) );
 			break;
 		case 'speed-min':
