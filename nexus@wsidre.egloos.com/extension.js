@@ -24,8 +24,6 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 	const PelletPlane = Ext.pelletplane;
 	const ActorWrap = Ext.actorwrap;
 
-var is_setup;
-
 var settings;
 
 //Pellet and background plane.
@@ -36,7 +34,6 @@ function init(metadata) {
 }
 
 function enable() {
-
 	/* Getting parameters from metadata */
 	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
 	pellet_plane = new PelletPlane.PelletPlane( settings );
@@ -45,18 +42,12 @@ function enable() {
 	ActorWrap.add_actor( pellet_plane.actor );
 	
 	pellet_plane.start();
-
-	is_setup = true;
 }
 
 function disable() {
-	if( is_setup ){
-		pellet_plane.stop();
+	pellet_plane.stop();
+
+	ActorWrap.unsetup();
 	
-		ActorWrap.unsetup();
-		
-		delete pellet_plane;
-		
-		is_setup = false;
-	}
+	delete pellet_plane;
 }
