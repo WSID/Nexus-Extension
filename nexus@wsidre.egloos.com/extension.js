@@ -31,14 +31,6 @@ var settings;
 //Pellet and background plane.
 var pellet_plane;			/* for background */
 
-//Main ( 3.0.x Entry Point )
-//TODO(0.6): Drop this.
-function main(metadata) {
-	init( metadata );
-	enable( );
-}
-
-//init, enable, disable ( 3.1.x Entry Point )
 function init(metadata) {
 
 }
