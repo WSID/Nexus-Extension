@@ -77,7 +77,7 @@ function setup( ){
 	shandler_maximize = Main.wm._shellwm.connect('maximize', shand_maximize );
 	shandler_unmaximize = Main.wm._shellwm.connect('unmaximize', shand_unmaximize );
 	shandler_unmaximize = Main.wm._shellwm.connect('map', shand_map );
-	shandler_switch_workspace = Main.wm._shellwm.connect('kill-switch-workspace', shand_switch_workspace );
+	shandler_switch_workspace = Main.wm._shellwm.connect('switch-workspace', shand_switch_workspace );
 	is_setup = true;
 	
 	set_maximize_counter_from_workspace(
