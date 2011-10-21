@@ -51,6 +51,7 @@ PelletPlane.prototype = {
 	//	_syend:
 	//State
 	//	_started:						bool
+	//	_paused:						bool
 	//Signal Handlers' IDs
 	//	_sigid_screen_change_width:		uint
 	//	_sigid_screen_change_height:	uint
@@ -105,10 +106,12 @@ PelletPlane.prototype = {
 			this._sigid_screen_change_height =
 				global.stage.connect('notify::height', Lang.bind( this, this.config_screen_size) );
 		
-			this._srcid_spawning =
-				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
-			this._srcid_stepping =
-				Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+			if( ! this._paused ){
+				this._srcid_spawning =
+					Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
+				this._srcid_stepping =
+					Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+			}
 			this.actor.visible = true;
 			
 			if( this._is_postponed_color_init )
@@ -122,10 +125,28 @@ PelletPlane.prototype = {
 			this.actor.visible = false;
 			Mainloop.source_remove( this._srcid_spawning );
 			Mainloop.source_remove( this._srcid_stepping );
-			global.stage.disconnect( this._sigid_screen_change_width );
-			global.stage.disconnect( this._sigid_screen_change_height );
+			if( this._paused ){
+				global.stage.disconnect( this._sigid_screen_change_width );
+				global.stage.disconnect( this._sigid_screen_change_height );
+			}
 		
 			this._started = false;
+		}
+	},
+	resume: function(){
+		if( this._paused ){
+			this._srcid_spawning =
+				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
+			this._srcid_stepping =
+				Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+			this._paused = false;
+		}
+	},
+	pause: function(){
+		if( ! this._paused ){
+			Mainloop.source_remove( this._srcid_spawning );
+			Mainloop.source_remove( this._srcid_stepping );
+			this._paused = true;
 		}
 	},
 	set_offset: function( offset_x, offset_y ){
