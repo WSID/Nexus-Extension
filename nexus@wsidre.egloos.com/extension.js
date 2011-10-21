@@ -39,7 +39,7 @@ function enable() {
 	pellet_plane = new PelletPlane.PelletPlane( settings );
 	
 	ActorWrap.setup();
-	ActorWrap.add_actor( pellet_plane.actor );
+	ActorWrap.add_plane( pellet_plane );
 	
 	pellet_plane.start();
 }
@@ -48,6 +48,4 @@ function disable() {
 	pellet_plane.stop();
 
 	ActorWrap.unsetup();
-	
-	delete pellet_plane;
 }

@@ -20,6 +20,8 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
 var is_setup;
 
+var subplanes;
+
 var wrap_plane;
 var wrap_plane_clone;
 
@@ -32,6 +34,8 @@ var shandler_hidden;
 
 		/* **** 1. Core functions.		*/
 function setup( ){
+	
+	subplanes = new Array();
 	
 	wrap_plane = new Clutter.Group();
 	wrap_plane_clone = new Clutter.Clone( {source:wrap_plane } );
@@ -123,4 +127,14 @@ function add_actor( actor ){
 
 function remove_actor( actor ){
 	wrap_plane.remove_actor( actor );
+}
+
+function add_plane( plane ){
+	subplanes.push( plane );
+	wrap_plane.add_actor( plane.actor );
+}
+
+function remove_plane( plane ){
+	subplanes.pop( plane );
+	wrap_plane.remove_actor( plane.actor );
 }
