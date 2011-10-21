@@ -32,6 +32,9 @@ var shandler_restacked;
 var shandler_showing;
 var shandler_hidden;
 
+var shandler_maximize;
+var shandler_unmaximize;
+
 		/* **** 1. Core functions.		*/
 function setup( ){
 	
@@ -69,6 +72,8 @@ function setup( ){
 		 */
 	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
 	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
+	shandler_maximize = Main.wm._shellwm.connect('maximize', shand_maximize );
+	shandler_unmaximize = Main.wm._shellwm.connect('minimize', shand_unmaximize );
 	is_setup = true;
 }
 
@@ -118,6 +123,14 @@ function shand_overview_showing(){
 	 */
 function shand_overview_hidden(){
 	wrap_plane_clone.visible = false;
+}
+
+function shand_maximize(){
+	pause();
+}
+
+function shand_unmaximize(){
+	resume();
 }
 
 		/* **** 2. Public functions to add or remove actor to wrap.	*/
