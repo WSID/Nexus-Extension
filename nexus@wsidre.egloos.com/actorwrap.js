@@ -35,6 +35,8 @@ var shandler_hidden;
 var shandler_maximize;
 var shandler_unmaximize;
 
+var maximize_counter;
+
 		/* **** 1. Core functions.		*/
 function setup( ){
 	
@@ -73,8 +75,15 @@ function setup( ){
 	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
 	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
 	shandler_maximize = Main.wm._shellwm.connect('maximize', shand_maximize );
-	shandler_unmaximize = Main.wm._shellwm.connect('minimize', shand_unmaximize );
+	shandler_unmaximize = Main.wm._shellwm.connect('unmaximize', shand_unmaximize );
+	shandler_unmaximize = Main.wm._shellwm.connect('map', shand_map );
+	shandler_switch_workspace = Main.wm._shellwm.connect('kill-switch-workspace', shand_switch_workspace );
 	is_setup = true;
+	
+	set_maximize_counter_from_workspace(
+		global.screen.get_workspace_by_index(
+			global.screen.get_active_workspace_index() ) );
+	global.log('ActorWrap.setup: done!');
 }
 
 function unsetup( ){
@@ -125,12 +134,48 @@ function shand_overview_hidden(){
 	wrap_plane_clone.visible = false;
 }
 
-function shand_maximize(){
-	pause();
+function shand_maximize( shellwm, actor ){
+	global.log('shand_maximized: called!!');
+	increase_maximize_counter();
 }
 
-function shand_unmaximize(){
-	resume();
+function shand_unmaximize( shellwm, actor ){
+	global.log('shand_unmaximize: called!!');
+	decrease_maximize_counter();
+}
+
+function shand_map( shellwm, actor ){
+	global.log('shand_map: called!!');
+	if( actor.meta_window.get_maximized() == 3 ) increase_maximize_counter();
+}
+
+function shand_switch_workspace( shellwm, from, to, direction ){
+	global.log('shand_switch_workspace: called!!');
+	set_maximize_counter_from_workspace(
+		global.screen.get_workspace_by_index( to ) );
+}
+
+function set_maximize_counter_from_workspace( workspace ){
+	global.log("set_maximize_counter_from_workspace(): called for " + workspace );
+	wlist = workspace.list_windows();
+	maximize_counter = 0;
+	for( var i = 0; i < wlist.length ; i++ ){
+		if( wlist[i].get_maximized() == 3 ) maximize_counter++;
+	}
+	if( maximize_counter > 0 ) pause();
+	else resume();
+	global.log('set_maximize_counter_from_workspace(): maximize_counter = ' + maximize_counter);
+}
+
+function increase_maximize_counter( ) {
+	if( ++maximize_counter > 0 ) pause();
+	global.log('increase_maximize_counter(): maximize_counter = ' + maximize_counter);
+}
+
+function decrease_maximize_counter( ) {
+	if( --maximize_counter == 0 ) resume();
+	maximize_counter = Math.max( 0 , maximize_counter);
+	global.log('decrease_maximize_counter(): maximize_counter = ' + maximize_counter);
 }
 
 		/* **** 2. Public functions to add or remove actor to wrap.	*/
