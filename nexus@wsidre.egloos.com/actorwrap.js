@@ -138,3 +138,15 @@ function remove_plane( plane ){
 	subplanes.pop( plane );
 	wrap_plane.remove_actor( plane.actor );
 }
+
+function pause(){
+	for( let i = 0; i < subplanes.length ; i++ ){
+		subplanes[i].pause();
+	}
+}
+
+function resume(){
+	for( let i = 0; i < subplanes.length ; i++ ){
+		subplanes[i].resume();
+	}
+}
