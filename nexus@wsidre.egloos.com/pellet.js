@@ -117,7 +117,6 @@ PelletSource.prototype = {
 			this.cstruct.alpha = default_alpha;
 		}
 		this.actor = new Clutter.CairoTexture();
-		this.actor.connect('draw', this._paint.bind( this ) );
 		
 		this.set_dimension( width, trail_length, glow_radius );
 		
@@ -140,12 +139,8 @@ PelletSource.prototype = {
 		this.width = width;
 		this.trail_length = trail_length;
 		this.glow_radius = glow_radius;
-
-		this.config_internal_dimensions();
-
-		this.actor.invalidate();
-		this.actor.set_anchor_point( Math.max(glow_radius, trail_length),
-									 glow_radius );
+		this._paint();
+		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	},
 	
 	set_color: function( color ){
@@ -155,32 +150,16 @@ PelletSource.prototype = {
 		if( this.use_defalut_alpha ){
 			this.cstruct.alpha = this.default_alpha;
 		}
-		this.actor.invalidate();
+		this._paint();
 	},
 	
 	set_default_alpha: function( alpha ){
 		this.default_alpha = alpha;
 		if( this.use_default_alpha ){
 			this.cstruct.alpha = alpha;
-			this.actor.invalidate();
+			this._paint();
 		}
 	},
-	
-	config_internal_dimensions: function( ){
-		this.center_x = Math.max(this.glow_radius, this.trail_length );
-		
-		this.surface_width =  this.glow_radius + this.center_x;
-		this.surface_height = this.glow_radius + this.glow_radius;
-
-		this.actor.set_size( surface_width, surface_height );
-		this.actor.set_surface_size( surface_width, surface_height );
-
-		this.trail_start	= this.center_x - this.trail_length;
-		this.trail_end		= this.center_x + (this.width / 2);
-	
-		this.glow_start		= this.center_x - this.glow_radius;
-		this.glow_end		= this.center_x + this.glow_radius;
-	}
 		/** paint: void
 		 * Paints colorized energy pellet. It uses cairo rather than images.
 		 *
@@ -196,10 +175,27 @@ PelletSource.prototype = {
 		 *				 or string			: String representation that read by
 		 *									  Gdk.RGBA.parse
 		 */
-	_paint: function (texture, context){
+	_paint: function (){
+		let center_x = Math.max(this.glow_radius, this.trail_length);
+	
+		let trail_start	= center_x - this.trail_length;
+		let trail_end	= center_x + (this.width / 2);
+	
+		let glow_start = center_x - this.glow_radius;
+		let glow_end = center_x + this.glow_radius;
+	
+		let surface_width = center_x + this.glow_radius;
+		let surface_height = this.glow_radius << 1;
+		
+		this.actor['surface-width'] = surface_width;
+		this.actor['surface-height'] = surface_height;
+		this.actor.width = surface_width;
+		this.actor.height = surface_height;
+
+		let context = this.actor.create();
+	
 		/* Draw Trailing with Linear Gradient */
-		let trailing_pat = new Cairo.LinearGradient(0, this.trail_start,
-													this.trail_end, 0 );
+		let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
 		trailing_pat.addColorStopRGBA( 0,	this.cstruct.red,
 											this.cstruct.green,
 											this.cstruct.blue,
@@ -210,17 +206,13 @@ PelletSource.prototype = {
 											this.cstruct.alpha );
 
 			context.setSource( trailing_pat );
-			context.rectangle( this.trail_start,
-							   this.glow_radius - (this.width / 2),
-							   this.trail_end - this.trail_start,
-							   this.width );
+			context.rectangle( trail_start, this.glow_radius - (this.width / 2),
+							   trail_end - trail_start, this.width );
 			context.fill( );
 
 		/* Draw glowing with Radial Gradient */
-		let glow_pat = new Cairo.RadialGradient( this.center_x,
-												 this.glow_radius, this.width / 2,
-												 this.center_x,
-												 this.glow_radius, this.glow_radius );
+		let glow_pat = new Cairo.RadialGradient( center_x, this.glow_radius, this.width / 2,
+												 center_x, this.glow_radius, this.glow_radius );
 		glow_pat.addColorStopRGBA( 0,	this.cstruct.red,
 										this.cstruct.green,
 										this.cstruct.blue,
@@ -230,10 +222,10 @@ PelletSource.prototype = {
 										this.cstruct.blue, 0 );
 
 			context.setSource( glow_pat );
-			context.rectangle( this.glow_start, 0,
-							   this.glow_end - this.glow_start,
-							   this.surface_height );
+			context.rectangle( glow_start, 0,
+							   glow_end - glow_start, surface_height );
 			context.fill( );
+		context = null;
 	}
 
 }
