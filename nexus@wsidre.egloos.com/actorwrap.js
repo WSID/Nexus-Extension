@@ -34,6 +34,7 @@ var shandler_hidden;
 
 var shandler_maximize;
 var shandler_unmaximize;
+var shandler_switch_workspace;
 
 var maximize_counter;
 
@@ -145,8 +146,9 @@ function shand_unmaximize( shellwm, actor ){
 }
 
 function shand_map( shellwm, actor ){
-	global.log('shand_map: called!!');
-	if( actor.meta_window.get_maximized() == 3 ) increase_maximize_counter();
+	global.log('shand_map: called with ' + actor );
+	if( actor.meta_window.is_fullscreen() ||
+		actor.meta_window.get_maximized() == 3 ) increase_maximize_counter();
 }
 
 function shand_switch_workspace( shellwm, from, to, direction ){
