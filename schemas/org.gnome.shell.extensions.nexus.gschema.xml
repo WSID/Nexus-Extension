@@ -27,17 +27,54 @@ Changes on this requires restart to take effect.</description>
 			<summary>Stepping timeout</summary>
 			<description>Time interval of each step animation. Every pellet moves in each stepping. It may be considered as 'frame duration'.</description>
 		</key>
-		<key type="i" name="proceed-timeout">
-			<default>30</default>
-			<range min="10" max="2147483647"/>
-			<summary>Stepping timeout (Renamed)</summary>
-			<description>This key will be renamed. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
-		</key>
 		
 		<key type="(dd)" name="speed">
 			<default>(360, 500)</default>
 			<summary>Range of pellet speed</summary>
 			<description>A pair of pellet speed. The former is minimum speed, the latter is maximum speed. If this is invalid, this can be changed to be vaild.</description>
+		</key>
+
+		
+		<key type="(dd)" name="offset">
+			<default>(0, 0)</default>
+			<summary>Offset of pellet plane</summary>
+			<description>Offset of pellet plane. When offset is (0, 0), leftmost pellet will stick to left border of screen and Topmost pellet, top border of screen.</description>
+		</key>
+
+		<key type="as" name="pellet-directions">
+			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
+			<choices>
+				<choice value="UP"/>
+				<choice value="LEFT"/>
+				<choice value="DOWN"/>
+				<choice value="RIGHT"/>
+				<choice value="['UP']"/>
+				<choice value="['LEFT']"/>
+				<choice value="['DOWN']"/>
+				<choice value="['RIGHT']"/>
+				<choice value="['UP', 'LEFT']"/>
+				<choice value="['UP', 'DOWN']"/>
+				<choice value="['UP', 'RIGHT']"/>
+				<choice value="['LEFT', 'DOWN']"/>
+				<choice value="['LEFT', 'RIGHT']"/>
+				<choice value="['DOWN', 'RIGHT']"/>
+				<choice value="['UP', 'LEFT', 'DOWN']"/>
+				<choice value="['UP', 'LEFT', 'RIGHT']"/>
+				<choice value="['UP', 'DOWN', 'RIGHT']"/>
+				<choice value="['LEFT', 'DOWN', 'RIGHT']"/>
+				<choice value="['UP', 'LEFT', 'DOWN', 'RIGHT']"/>
+			</choices>
+			<summary>Directions of pellets</summary>
+			<description>Directions of pellets. Each direction must be one of 'UP', 'DOWN', 'LEFT', 'RIGHT'. Invalid values will be ignored.</description>
+		</key>
+
+
+
+		<key type="i" name="proceed-timeout">
+			<default>30</default>
+			<range min="10" max="2147483647"/>
+			<summary>Stepping timeout (Renamed)</summary>
+			<description>This key will be renamed. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="d" name="speed-min">
@@ -53,8 +90,7 @@ Changes on this requires restart to take effect.</description>
 			<summary>Minimum speed of pellet (Obsolete)</summary>
 			<description>This value will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
-
-
+		
 		<key type="as" name="pellet-colors">
 			<default>['#FF2020', '#20FF20', '#2020FF', '#FFFF00']</default>
 			<summary>Colors of pellets (Relocated)</summary>
@@ -88,13 +124,7 @@ Changes on this requires restart to take effect.</description>
 			<summary>Glowing radius of pellet (Relocated)</summary>
 			<description>This key will be relocated. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
-		
-		<key type="(dd)" name="offset">
-			<default>(0, 0)</default>
-			<summary>Offset of pellet plane</summary>
-			<description>Offset of pellet plane. When offset is (0, 0), leftmost pellet will stick to left border of screen and Topmost pellet, top border of screen.</description>
-		</key>
-		
+				
 		<key type="d" name="pellet-offset-x">
 			<default>0</default>
 			<range min="-4096" max="4096"/>
@@ -106,33 +136,6 @@ Changes on this requires restart to take effect.</description>
 			<range min="-4096" max="4096"/>
 			<summary>Offset of pellet plane (Obsolete)</summary>
 			<description>This value will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
-		</key>
-		
-		<key type="as" name="pellet-directions">
-			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
-			<choices>
-				<choice value="UP"/>
-				<choice value="LEFT"/>
-				<choice value="DOWN"/>
-				<choice value="RIGHT"/>
-				<choice value="['UP']"/>
-				<choice value="['LEFT']"/>
-				<choice value="['DOWN']"/>
-				<choice value="['RIGHT']"/>
-				<choice value="['UP', 'LEFT']"/>
-				<choice value="['UP', 'DOWN']"/>
-				<choice value="['UP', 'RIGHT']"/>
-				<choice value="['LEFT', 'DOWN']"/>
-				<choice value="['LEFT', 'RIGHT']"/>
-				<choice value="['DOWN', 'RIGHT']"/>
-				<choice value="['UP', 'LEFT', 'DOWN']"/>
-				<choice value="['UP', 'LEFT', 'RIGHT']"/>
-				<choice value="['UP', 'DOWN', 'RIGHT']"/>
-				<choice value="['LEFT', 'DOWN', 'RIGHT']"/>
-				<choice value="['UP', 'LEFT', 'DOWN', 'RIGHT']"/>
-			</choices>
-			<summary>Directions of pellets</summary>
-			<description>Directions of pellets. Each direction must be one of 'UP', 'DOWN', 'LEFT', 'RIGHT'. Invalid values will be ignored.</description>
 		</key>
 
 	</schema>
