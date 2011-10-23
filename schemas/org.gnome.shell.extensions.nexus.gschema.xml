@@ -21,73 +21,91 @@ Changes on this requires restart to take effect.</description>
 			<summary>Spawning probability of each spawning timeout</summary>
 			<description>Spawning probability of each spawning timeout. 0 means no spawning, 1 means spawn pellet every timeout.</description>
 		</key>
-		<key type="i" name="proceed-timeout">
+		<key type="i" name="stepping-timeout">
 			<default>30</default>
 			<range min="10" max="2147483647"/>
 			<summary>Stepping timeout</summary>
 			<description>Time interval of each step animation. Every pellet moves in each stepping. It may be considered as 'frame duration'.</description>
 		</key>
+		<key type="i" name="proceed-timeout">
+			<default>30</default>
+			<range min="10" max="2147483647"/>
+			<summary>Stepping timeout (Renamed)</summary>
+			<description>This key will be renamed. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
+		</key>
+		
+		<key type="(dd)" name="speed">
+			<default>(360, 500)</default>
+			<summary>Range of pellet speed</summary>
+			<description>A pair of pellet speed. The former is minimum speed, the latter is maximum speed. If this is invalid, this can be changed to be vaild.</description>
+		</key>
 		
 		<key type="d" name="speed-min">
 			<default>360</default>
 			<range min="1" max="4096"/>
-			<summary>Minimum speed of pellet</summary>
-			<description>Minimum speed of pellet.</description>
+			<summary>Minimum speed of pellet (Obsolete)</summary>
+			<description>This key will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="d" name="speed-max">
 			<default>500</default>
 			<range min="1" max="4096"/>
-			<summary>Minimum speed of pellet</summary>
-			<description>Minimum speed of pellet.</description>
+			<summary>Minimum speed of pellet (Obsolete)</summary>
+			<description>This value will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 
 
 		<key type="as" name="pellet-colors">
 			<default>['#FF2020', '#20FF20', '#2020FF', '#FFFF00']</default>
-			<summary>Colors of pellets</summary>
+			<summary>Colors of pellets (Relocated)</summary>
 			<description>The colors which pellets will use. Each pellet will use one of the colors randomly. The format of color should be understood by gdk_rgba_parse(). ( For example, rgba( 127, 127, 127, 0.5 ) or #979797 )</description>
 		</key>
 		
 		<key type="d" name="pellet-default-alpha">
 			<default>0.3</default>
 			<range min="0" max="1"/>
-			<summary>Default alpha (Opacity)</summary>
-			<description>Default Alpha which is used for colors without alpha value. For colors with their alpha values, they will use their own. 0 means transparent, 1 means opaque.</description>
+			<summary>Default alpha (Opacity) (Relocated)</summary>
+			<description>This key will be relocated. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="d" name="pellet-trail-length">
 			<default>393</default>
 			<range min="1" max="4096"/>
-			<summary>Trail length of pellet</summary>
-			<description>Trail length of pellet.</description>
+			<summary>Trail length of pellet (Relocated)</summary>
+			<description>This key will be relocated. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="d" name="pellet-width">
 			<default>14</default>
 			<range min="1" max="4096"/>
-			<summary>Width of pellet</summary>
-			<description>Width of pellet.</description>
+			<summary>Width of pellet (Relocated)</summary>
+			<description>This key will be relocated. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="d" name="pellet-glow-radius">
 			<default>21</default>
 			<range min="0" max="4096"/>
-			<summary>Glowing radius of pellet</summary>
-			<description>Glowing radius of pellet.</description>
+			<summary>Glowing radius of pellet (Relocated)</summary>
+			<description>This key will be relocated. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
+		</key>
+		
+		<key type="(dd)" name="offset">
+			<default>(0, 0)</default>
+			<summary>Offset of pellet plane</summary>
+			<description>Offset of pellet plane. When offset is (0, 0), leftmost pellet will stick to left border of screen and Topmost pellet, top border of screen.</description>
 		</key>
 		
 		<key type="d" name="pellet-offset-x">
 			<default>0</default>
 			<range min="-4096" max="4096"/>
-			<summary>Offset of pellet plane</summary>
-			<description>Offset of pellet plane. Leftmost pellet will stick to left border of screen for offset (0, 0).</description>
+			<summary>Offset of pellet plane (Obsolete)</summary>
+			<description>This value will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		<key type="d" name="pellet-offset-y">
 			<default>0</default>
 			<range min="-4096" max="4096"/>
-			<summary>Offset of pellet plane</summary>
-			<description>Offset of pellet plane. Topmost pellet will stick to top border of screen for offset (0, 0).</description>
+			<summary>Offset of pellet plane (Obsolete)</summary>
+			<description>This value will not be used. To have period to move to new keys, changes on this will be reflected on new correspond key, and vice versa.</description>
 		</key>
 		
 		<key type="as" name="pellet-directions">
@@ -116,10 +134,43 @@ Changes on this requires restart to take effect.</description>
 			<summary>Directions of pellets</summary>
 			<description>Directions of pellets. Each direction must be one of 'UP', 'DOWN', 'LEFT', 'RIGHT'. Invalid values will be ignored.</description>
 		</key>
-		
-		<key type="(dd)" name="test-range">
-			<summary>Test schema for range or 2d coordination ( double doublet )</summary>
-			<default>(0, 0)</default>
+
+	</schema>
+	
+	<schema path="/org/gnome/shell/extensions/nexus/pellet/" id="org.gnome.shell.extensions.nexus.pellet" gettext-domain="gnome-shell-extensions">
+		<key type="as" name="colors">
+			<default>['#FF2020', '#20FF20', '#2020FF', '#FFFF00']</default>
+			<summary>Colors of pellets</summary>
+			<description>The colors which pellets will use. Each pellet will use one of the colors randomly. The format of color should be understood by gdk_rgba_parse(). ( For example, rgba( 127, 127, 127, 0.5 ) or #979797 )</description>
 		</key>
+		
+		<key type="d" name="default-alpha">
+			<default>0.3</default>
+			<range min="0" max="1"/>
+			<summary>Default alpha (Opacity)</summary>
+			<description>Default Alpha which is used for colors without alpha value. For colors with their alpha values, they will use their own. 0 means transparent, 1 means opaque.</description>
+		</key>
+		
+		<key type="d" name="trail-length">
+			<default>393</default>
+			<range min="1" max="4096"/>
+			<summary>Trail length of pellet</summary>
+			<description>Trail length of pellet.</description>
+		</key>
+		
+		<key type="d" name="width">
+			<default>14</default>
+			<range min="1" max="4096"/>
+			<summary>Width of pellet</summary>
+			<description>Width of pellet.</description>
+		</key>
+		
+		<key type="d" name="glow-radius">
+			<default>21</default>
+			<range min="0" max="4096"/>
+			<summary>Glowing radius of pellet</summary>
+			<description>Glowing radius of pellet.</description>
+		</key>
+		
 	</schema>
 </schemalist>
