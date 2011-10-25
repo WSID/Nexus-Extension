@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <schemalist>
-	<schema path="/org/gnome/shell/extensions/nexus/" id="org.gnome.shell.extensions.nexus" gettext-domain="gnome-shell-extensions">
+
+	<flags id="DirectionFlags">
+		<value nick="UP" value="8"/>
+		<value nick="LEFT" value="4"/>
+		<value nick="DOWN" value="2"/>
+		<value nick="RIGHT" value="1"/>
+	</flags>
+	
+	<schema path="/org/gnome/shell/extensions/nexus/"
+			id="org.gnome.shell.extensions.nexus">
 	
 		<key type="i" name="pool-capacity">
 			<default>64</default>
@@ -41,6 +50,10 @@ Changes on this requires restart to take effect.</description>
 			<description>Offset of pellet plane. When offset is (0, 0), leftmost pellet will stick to left border of screen and Topmost pellet, top border of screen.</description>
 		</key>
 
+		<key name="testdrive" flags="DirectionFlags">
+			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
+		</key>
+
 		<key type="as" name="pellet-directions">
 			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
 			<choices>
@@ -68,7 +81,7 @@ Changes on this requires restart to take effect.</description>
 			<description>Directions of pellets. Each direction must be one of 'UP', 'DOWN', 'LEFT', 'RIGHT'. Invalid values will be ignored.</description>
 		</key>
 
-
+		<child name="pellet" schema="org.gnome.shell.extension.nexus.pellet"/>
 
 		<key type="i" name="proceed-timeout">
 			<default>30</default>
@@ -140,7 +153,7 @@ Changes on this requires restart to take effect.</description>
 
 	</schema>
 	
-	<schema path="/org/gnome/shell/extensions/nexus/pellet/" id="org.gnome.shell.extensions.nexus.pellet" gettext-domain="gnome-shell-extensions">
+	<schema id="org.gnome.shell.extensions.nexus.pellet">
 		<key type="as" name="colors">
 			<default>['#FF2020', '#20FF20', '#2020FF', '#FFFF00']</default>
 			<summary>Colors of pellets</summary>
