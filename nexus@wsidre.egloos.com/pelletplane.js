@@ -434,7 +434,6 @@ PelletPlane.prototype = {
 			GObject.signal_handler_unblock( this._sigid_pellet_settings );
 			break;
 		}
-		}
 	},
 	
 	sigh_pellet_settings_changed: function( settings, key ){
@@ -474,7 +473,8 @@ PelletPlane.prototype = {
 			this._settings.set_double( 'pellet-glow-radius', this.pellet_glow_radius );
 			GObject.signal_handler_unblock( this._sigid_pellet_settings );
 			break;
-	}
+		}
+	},
 	
 	set_pellet_step: function( _min, _max ){
 		this._pellet_step_min = _min;
