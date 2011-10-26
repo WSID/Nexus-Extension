@@ -175,7 +175,8 @@ PelletPlane.prototype = {
 		
 		if( this._started ){
 			Mainloop.source_remove( this._srcid_stepping );
-			this._srcid_stepping = Mainloop.add_timeout( this.do_step );
+			this._srcid_stepping =
+				Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
 		}
 		this.config_step();
 	},
@@ -185,7 +186,8 @@ PelletPlane.prototype = {
 		
 		if( this._started ){
 			Mainloop.source_remove( this._srcid_spawning );
-			this._srcid_spawning = Mainloop.add_timeout( this.pellet_spawn );
+			this._srcid_spawning =
+				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
 		}
 	},
 	set_spawn_probability: function( probability ){
@@ -329,20 +331,22 @@ PelletPlane.prototype = {
 	},
 	
 	sigh_plane_settings_changed: function( settings, key ){
-		/* As we cannot retrive data via return value of Settings.get_mapped(),
-		 * we'll set parameters in callback which was supposed to process
-		 * variant into data in form of usable.				*/
+			if( ! settings ) global.log( "Is there settings had been null?" );
 		switch( key ){
 		case 'offset':
-			this.set_offset.apply( this, settings.get_value().deep_unpack() );
-			
-			GObject.signal_handler_block( this._sigid_settings );
+			this.set_offset.apply( this, settings.get_value( key ).deep_unpack() );
+			 
+			settings.disconnect( this._sigid_settings );
 			settings.set_double( 'pellet-offset-x', this.offset_x );
 			settings.set_double( 'pellet-offset-y', this.offset_y );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
-		case 'proceed-timeout':
+		case 'step-duration':
 			this.set_step_duration( settings.get_int( key ) );
+			
+			settings.disconnect( this._sigid_settings );
+			settings.set_int( 'proceed-timeout', this.step_duration );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'spawn-timeout':
 			this.set_spawn_timeout( settings.get_int( key ) );
@@ -351,14 +355,15 @@ PelletPlane.prototype = {
 			this.set_spawn_probability( settings.get_double( key ) );
 			break;
 		case 'speed':
-			let speed = settings.get_value().deep_unpack();
-			this.set_pellet_speed_min( this, speed[0] );
-			this.set_pellet_speed_min( this, speed[1] );
+			let speed = settings.get_value( key ).deep_unpack();
+			global.log( "a: " + speed[0] + ", b: " + speed[1] );
+			this.set_pellet_speed_min( speed[0] );
+			this.set_pellet_speed_max( speed[1] );
 			
-			GObject.signal_handler_block( this._sigid_settings );
-			settings.set_double( 'pellet-offset-x', this.pellet_speed_min );
-			settings.set_double( 'pellet-offset-y', this.pellet_speed_max );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			settings.disconnect( this._sigid_settings );
+			settings.set_double( 'speed-min', this.pellet_speed_min );
+			settings.set_double( 'speed-max', this.pellet_speed_max );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'pellet-directions':
 			this.set_pellet_directions( settings.get_strv( key ) );
@@ -368,72 +373,81 @@ PelletPlane.prototype = {
 		case 'pellet-offset-x':
 			this.set_offset( settings.get_double( key ), this.offset_y );
 			
-			GObject.signal_handler_block( this._sigid_settings );
+			settings.disconnect( this._sigid_settings );
 			settings.set_value( 'offset',
 				new GLib.Variant.new( '(dd)', [this.offset_x, this.offset_y] ) );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'pellet-offset-y':
 			this.set_offset( this.offset_x, settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_settings );
+			settings.disconnect( this._sigid_settings );
 			settings.set_value( 'offset',
 				new GLib.Variant.new( '(dd)', [this.offset_x, this.offset_y] ) );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'speed-min':
 			this.set_pellet_speed_min( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_settings );
+			settings.disconnect( this._sigid_settings );
 			settings.set_value( 'speed',
 				new GLib.Variant.new( '(dd)', [this.pellet_speed_min, this.pellet_speed_max] ) );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'speed-max':
 			this.set_pellet_speed_max( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_settings );
+			settings.disconnect( this._sigid_settings );
 			settings.set_value( 'speed',
 				new GLib.Variant.new( '(dd)', [this.pellet_speed_min, this.pellet_speed_max] ) );
-			GObject.signal_handler_unblock( this._sigid_settings );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
+			break;
+		case 'proceed-timeout':
+			this.set_step_duration( settings.get_int( key ) );
+			
+			settings.disconnect( this._sigid_settings );
+			settings.set_int( 'step-duration', this.step_duration );
+			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		//Relocated setting keys from up-level settings.
 		case 'pellet-colors':
 			this.set_pellet_colors( settings.get_strv( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._pellet_settings.disconnect( this._sigid_pellet_settings );
 			this._pellet_settings.set_strv( 'colors', this.pellet_colors );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_pellet_settings = this._pellet_settings.connect( 'changed', this.sigh_pellet_settings_changed.bind( this )  );
 			break;
 		case 'pellet-default-alpha':
 			this.set_pellet_default_alpha( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._pellet_settings.disconnect( this._sigid_pellet_settings );
 			this._pellet_settings.set_double( 'default-alpha', this.pellet_default_alpha );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_pellet_settings = this._pellet_settings.connect( 'changed', this.sigh_pellet_settings_changed.bind( this )  );
 			break;
 		case 'pellet-width':
 			this.set_pellet_width( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._pellet_settings.disconnect( this._sigid_pellet_settings );
 			this._pellet_settings.set_double( 'width', this.pellet_width );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_pellet_settings = this._pellet_settings.connect( 'changed', this.sigh_pellet_settings_changed.bind( this )  );
 			break;
 		case 'pellet-trail-length':
 			this.set_pellet_trail_length( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._pellet_settings.disconnect( this._sigid_pellet_settings );
 			this._pellet_settings.set_double( 'trail-length', this.pellet_trail_length );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_pellet_settings = this._pellet_settings.connect( 'changed', this.sigh_pellet_settings_changed.bind( this )  );
 			break;
 		case 'pellet-glow-radius':
 			this.set_pellet_glow_radius( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._pellet_settings.disconnect( this._sigid_pellet_settings );
 			this._pellet_settings.set_double( 'glow-radius', this.pellet_glow_radius );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_pellet_settings = this._pellet_settings.connect( 'changed', this.sigh_pellet_settings_changed.bind( this )  );
 			break;
 		}
+		this._settings.sync();
+		this._pellet_settings.sync();
 	},
 	
 	sigh_pellet_settings_changed: function( settings, key ){
@@ -441,39 +455,40 @@ PelletPlane.prototype = {
 		case 'colors':
 			this.set_pellet_colors( settings.get_strv( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._settings.disconnect( this._sigid_settings );
 			this._settings.set_strv( 'pellet-colors', this.pellet_colors );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_settings = this._settings.connect( 'changed' , this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'default-alpha':
 			this.set_pellet_default_alpha( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._settings.disconnect( this._sigid_settings );
 			this._settings.set_double( 'pellet-default-colors', this.pellet_default_alpha );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_settings = this._settings.connect( 'changed' , this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'width':
 			this.set_pellet_width( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._settings.disconnect( this._sigid_settings );
 			this._settings.set_double( 'pellet-width', this.pellet_width );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_settings = this._settings.connect( 'changed' , this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'trail-length':
 			this.set_pellet_trail_length( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._settings.disconnect( this._sigid_settings );
 			this._settings.set_double( 'pellet-trail-length', this.pellet_trail_length );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_settings = this._settings.connect( 'changed' , this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'glow-radius':
 			this.set_pellet_glow_radius( settings.get_double( key ) );
 			
-			GObject.signal_handler_block( this._sigid_pellet_settings );
+			this._settings.disconnect( this._sigid_settings );
 			this._settings.set_double( 'pellet-glow-radius', this.pellet_glow_radius );
-			GObject.signal_handler_unblock( this._sigid_pellet_settings );
+			this._sigid_settings = this._settings.connect( 'changed' , this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		}
+		this._settings.sync();
 	},
 	
 	set_pellet_step: function( _min, _max ){
