@@ -27,7 +27,7 @@ PelletPlane.prototype = {
 	//	pool_capacity:					int
 	//	offset_x:						double
 	//	offset_y:						double
-	//	step_duration:					int ( millisecond )
+	//	stepping_timeout:					int ( millisecond )
 	//	spawn_timeout:					int ( millisecond )
 	//	spawn_probability:				double ( 0 ~ 1 )
 	//Pellet Parameters
@@ -99,7 +99,7 @@ PelletPlane.prototype = {
 		//Set plane paramters from settings
 		this.set_offset(	this._settings.get_double('pellet-offset-x'),
 							this._settings.get_double('pellet-offset-y') );
-		this.set_step_duration(	this._settings.get_int('proceed-timeout') );
+		this.set_stepping_timeout(	this._settings.get_int('proceed-timeout') );
 		this.set_spawn_timeout(	this._settings.get_int('spawn-timeout') );
 		this.set_spawn_probability(	this._settings.get_double('spawn-probability') );
 		
@@ -117,7 +117,7 @@ PelletPlane.prototype = {
 				this._srcid_spawning =
 					Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
 				this._srcid_stepping =
-					Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+					Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
 			}
 			this.actor.visible = true;
 			
@@ -145,7 +145,7 @@ PelletPlane.prototype = {
 			this._srcid_spawning =
 				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
 			this._srcid_stepping =
-				Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+				Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
 			this._paused = false;
 		}
 	},
@@ -170,13 +170,13 @@ PelletPlane.prototype = {
 									 this.offset_y );
 	},
 
-	set_step_duration: function( duration ){
-		this.step_duration = duration;
+	set_stepping_timeout: function( duration ){
+		this.stepping_timeout = duration;
 		
 		if( this._started ){
 			Mainloop.source_remove( this._srcid_stepping );
 			this._srcid_stepping =
-				Mainloop.timeout_add( this.step_duration, Lang.bind(this, this.do_step) );
+				Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
 		}
 		this.config_step();
 	},
@@ -311,12 +311,12 @@ PelletPlane.prototype = {
 	config_step: function( ){
 		if( (this.pellet_speed_min != undefined ) &&
 			(this.pellet_speed_max != undefined ) &&
-			(this.step_duration != undefined ) ){
+			(this.stepping_timeout != undefined ) ){
 			
 			this._pellet_step_min =
-				this.pellet_speed_min * this.step_duration / 1000;
+				this.pellet_speed_min * this.stepping_timeout / 1000;
 			this._pellet_step_max =
-				this.pellet_speed_max * this.step_duration / 1000;
+				this.pellet_speed_max * this.stepping_timeout / 1000;
 		}
 	},
 	
@@ -341,11 +341,11 @@ PelletPlane.prototype = {
 			settings.set_double( 'pellet-offset-y', this.offset_y );
 			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
-		case 'step-duration':
-			this.set_step_duration( settings.get_int( key ) );
+		case 'stepping-timeout':
+			this.set_stepping_timeout( settings.get_int( key ) );
 			
 			settings.disconnect( this._sigid_settings );
-			settings.set_int( 'proceed-timeout', this.step_duration );
+			settings.set_int( 'proceed-timeout', this.stepping_timeout );
 			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'spawn-timeout':
@@ -403,10 +403,10 @@ PelletPlane.prototype = {
 			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		case 'proceed-timeout':
-			this.set_step_duration( settings.get_int( key ) );
+			this.set_stepping_timeout( settings.get_int( key ) );
 			
 			settings.disconnect( this._sigid_settings );
-			settings.set_int( 'step-duration', this.step_duration );
+			settings.set_int( 'stepping-timeout', this.stepping_timeout );
 			this._sigid_settings = settings.connect( 'changed', this.sigh_plane_settings_changed.bind( this ) );
 			break;
 		//Relocated setting keys from up-level settings.
