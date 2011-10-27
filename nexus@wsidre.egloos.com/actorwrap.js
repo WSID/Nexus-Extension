@@ -156,7 +156,9 @@ function shand_unmaximize( shellwm, actor ){
 function shand_map( shellwm, actor ){
 	global.log('shand_map: called with ' + actor );
 	if( actor.meta_window.is_fullscreen() ||
-		actor.meta_window.get_maximized() == 3 ) add_to_maximized_list( actor );
+		actor.meta_window.get_maximized() ==
+			( Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL ) )
+				add_to_maximized_list( actor );
 	else remove_from_maximized_list( actor );
 }
 
