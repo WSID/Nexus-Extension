@@ -34,9 +34,13 @@ var shandler_hidden;
 
 var shandler_maximize;
 var shandler_unmaximize;
+var shandler_map;
+var shandler_destroy;
 var shandler_switch_workspace;
 
-var maximize_counter;
+var maximized_list;
+var paused;
+var paused_preserve;
 
 		/* **** 1. Core functions.		*/
 function setup( ){
@@ -77,11 +81,12 @@ function setup( ){
 	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
 	shandler_maximize = Main.wm._shellwm.connect('maximize', shand_maximize );
 	shandler_unmaximize = Main.wm._shellwm.connect('unmaximize', shand_unmaximize );
-	shandler_unmaximize = Main.wm._shellwm.connect('map', shand_map );
+	shandler_map = Main.wm._shellwm.connect('map', shand_map );
+	shandler_destroy = Main.wm._shellwm.connect('destroy', shand_destroy );
 	shandler_switch_workspace = Main.wm._shellwm.connect('switch-workspace', shand_switch_workspace );
 	is_setup = true;
 	
-	set_maximize_counter_from_workspace(
+	set_maximized_list_from_workspace(
 		global.screen.get_workspace_by_index(
 			global.screen.get_active_workspace_index() ) );
 	global.log('ActorWrap.setup: done!');
@@ -125,6 +130,8 @@ function shand_wrap_plane_lower(){
 	 */
 function shand_overview_showing(){
 	wrap_plane_clone.visible = true;
+	paused_preserve = (paused == undefined) ? false : paused;
+	resume();
 }
 
 	/** shand_overview_hidden: void
@@ -133,51 +140,71 @@ function shand_overview_showing(){
 	 */
 function shand_overview_hidden(){
 	wrap_plane_clone.visible = false;
+	if( paused_preserve ) pause();
 }
 
 function shand_maximize( shellwm, actor ){
-	global.log('shand_maximized: called!!');
-	increase_maximize_counter();
+	global.log('shand_maximized: called with ' + actor );
+	add_to_maximized_list( actor );
 }
 
 function shand_unmaximize( shellwm, actor ){
-	global.log('shand_unmaximize: called!!');
-	decrease_maximize_counter();
+	global.log('shand_unmaximize: called with ' + actor );
+	remove_from_maximized_list( actor );
 }
 
 function shand_map( shellwm, actor ){
 	global.log('shand_map: called with ' + actor );
 	if( actor.meta_window.is_fullscreen() ||
-		actor.meta_window.get_maximized() == 3 ) increase_maximize_counter();
+		actor.meta_window.get_maximized() == 3 ) add_to_maximized_list( actor );
+	else remove_from_maximized_list( actor );
+}
+
+function shand_destroy( shellwm, actor ){
+	global.log('shand_destroy: called with ' + actor );
+	remove_from_maximized_list( actor );
 }
 
 function shand_switch_workspace( shellwm, from, to, direction ){
 	global.log('shand_switch_workspace: called!!');
-	set_maximize_counter_from_workspace(
+	set_maximized_list_from_workspace(
 		global.screen.get_workspace_by_index( to ) );
 }
 
-function set_maximize_counter_from_workspace( workspace ){
-	global.log("set_maximize_counter_from_workspace(): called for " + workspace );
+function set_maximized_list_from_workspace( workspace ){
+	global.log('    set_maximized_list_from_workspace(): called for ' + workspace );
 	wlist = workspace.list_windows();
-	maximize_counter = 0;
+	maximized_list = new Array();
 	for( var i = 0; i < wlist.length ; i++ ){
-		if( wlist[i].get_maximized() == 3 ) maximize_counter++;
+		if( wlist[i].is_fullscreen() ||
+			wlist[i].get_maximized() == 3 ) add_to_maximized_list( wlist[i] );
 	}
-	if( maximize_counter > 0 ) pause();
+	if( maximized_list.length > 0 ) pause();
 	else resume();
-	global.log('set_maximize_counter_from_workspace(): maximize_counter = ' + maximize_counter);
+	global.log('    set_maximized_list_from_workspace(): maximized_list = ' + maximized_list);
 }
 
-function increase_maximize_counter( ) {
-	if( ++maximize_counter > 0 ) pause();
-	global.log('increase_maximize_counter(): maximize_counter = ' + maximize_counter);
+function add_to_maximized_list( actor ) {
+	if( maximized_list.indexOf( actor ) != -1 ){
+		global.log('    add_to_maximized_list(): actor ' + actor + ' already in maximized_list');
+		return;
+	}
+	
+	maximized_list.push( actor );
+	if( maximized_list.length > 0 ) pause();
+	global.log('    add_to_maximized_list(): maximized_list = ' + maximized_list);
 }
 
-function decrease_maximize_counter( ) {
-	if( --maximize_counter == 0 ) resume();
-	maximize_counter = Math.max( 0 , maximize_counter);
-	global.log('decrease_maximize_counter(): maximize_counter = ' + maximize_counter);
+function remove_from_maximized_list( actor ) {
+	let actor_index = maximized_list.indexOf( actor );
+	if( actor_index == -1 ){
+		global.log('    remove_from_maximized_list(): actor ' + actor + ' is not in maximized_list');
+		return;
+	}
+	
+	maximized_list.splice( actor_index, 1 );
+	if( maximized_list.length == 0 ) resume();
+	global.log('     remove_from_maximized_list(): maximized_list = ' + maximized_list);
 }
 
 		/* **** 2. Public functions to add or remove actor to wrap.	*/
@@ -203,10 +230,12 @@ function pause(){
 	for( let i = 0; i < subplanes.length ; i++ ){
 		subplanes[i].pause();
 	}
+	paused = true;
 }
 
 function resume(){
 	for( let i = 0; i < subplanes.length ; i++ ){
 		subplanes[i].resume();
 	}
+	paused = false;
 }
