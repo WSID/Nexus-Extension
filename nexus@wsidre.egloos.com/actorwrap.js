@@ -39,6 +39,8 @@ var shandler_destroy;
 var shandler_switch_workspace;
 
 var maximized_list;
+var lefttiled_list;
+var righttiled_list;
 var paused;
 var paused_preserve;
 
@@ -59,6 +61,10 @@ function setup( ){
 	overview_plane.get_parent().add_actor( wrap_plane_clone );
 	wrap_plane_clone.raise( overview_plane );
 	wrap_plane_clone.visible = false;
+	
+	maximized_list = new Array();
+	lefttiled_list = new Array();
+	righttiled_list = new Array();
 	
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
@@ -145,26 +151,27 @@ function shand_overview_hidden(){
 
 function shand_maximize( shellwm, actor ){
 	global.log('shand_maximized: called with ' + actor );
-	add_to_maximized_list( actor );
+	add_to_maximized_list( actor.meta_window );
 }
 
 function shand_unmaximize( shellwm, actor ){
 	global.log('shand_unmaximize: called with ' + actor );
-	remove_from_maximized_list( actor );
+	remove_from_maximized_list( actor.meta_window );
 }
 
 function shand_map( shellwm, actor ){
 	global.log('shand_map: called with ' + actor );
 	if( actor.meta_window.is_fullscreen() ||
 		actor.meta_window.get_maximized() ==
-			( Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL ) )
-				add_to_maximized_list( actor );
-	else remove_from_maximized_list( actor );
+			( Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL ) ){
+		add_to_maximized_list( actor );
+	}
+	else remove_from_maximized_list( actor.meta_window );
 }
 
 function shand_destroy( shellwm, actor ){
 	global.log('shand_destroy: called with ' + actor );
-	remove_from_maximized_list( actor );
+	remove_from_maximized_list( actor.meta_window );
 }
 
 function shand_switch_workspace( shellwm, from, to, direction ){
@@ -179,32 +186,34 @@ function set_maximized_list_from_workspace( workspace ){
 	maximized_list = new Array();
 	for( var i = 0; i < wlist.length ; i++ ){
 		if( wlist[i].is_fullscreen() ||
-			wlist[i].get_maximized() == 3 ) add_to_maximized_list( wlist[i] );
+			wlist[i].get_maximized() ==
+				( Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL ) )
+			add_to_maximized_list( wlist[i] );
 	}
 	if( maximized_list.length > 0 ) pause();
 	else resume();
 	global.log('    set_maximized_list_from_workspace(): maximized_list = ' + maximized_list);
 }
 
-function add_to_maximized_list( actor ) {
-	if( maximized_list.indexOf( actor ) != -1 ){
-		global.log('    add_to_maximized_list(): actor ' + actor + ' already in maximized_list');
+function add_to_maximized_list( mwin ) {
+	if( maximized_list.indexOf( mwin ) != -1 ){
+		global.log('    add_to_maximized_list(): mwin ' + mwin + ' already in maximized_list');
 		return;
 	}
 	
-	maximized_list.push( actor );
+	maximized_list.push( mwin );
 	if( maximized_list.length > 0 ) pause();
 	global.log('    add_to_maximized_list(): maximized_list = ' + maximized_list);
 }
 
-function remove_from_maximized_list( actor ) {
-	let actor_index = maximized_list.indexOf( actor );
-	if( actor_index == -1 ){
-		global.log('    remove_from_maximized_list(): actor ' + actor + ' is not in maximized_list');
+function remove_from_maximized_list( mwin ) {
+	let mwin_index = maximized_list.indexOf( mwin );
+	if( mwin_index == -1 ){
+		global.log('    remove_from_maximized_list(): mwin ' + mwin + ' is not in maximized_list');
 		return;
 	}
 	
-	maximized_list.splice( actor_index, 1 );
+	maximized_list.splice( mwin_index, 1 );
 	if( maximized_list.length == 0 ) resume();
 	global.log('     remove_from_maximized_list(): maximized_list = ' + maximized_list);
 }
