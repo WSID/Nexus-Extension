@@ -47,6 +47,7 @@ var maximized_group;
 
 var paused;
 var paused_preserve;
+var in_overview;
 
 		/* **** 1. Core functions.		*/
 function setup( ){
@@ -71,6 +72,8 @@ function setup( ){
 	righttiled_list = new Array();
 	
 	maximized_group = [maximized_list, lefttiled_list, righttiled_list];
+	
+	in_overview = false;
 	
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
@@ -141,6 +144,7 @@ function shand_wrap_plane_lower(){
 	 * it was part of overview screen.
 	 */
 function shand_overview_showing(){
+	in_overview = true;
 	wrap_plane_clone.visible = true;
 	paused_preserve = (paused == undefined) ? false : paused;
 	resume();
@@ -151,6 +155,7 @@ function shand_overview_showing(){
 	 * it is activated when overview screen is gone.
 	 */
 function shand_overview_hidden(){
+	in_overview = false;
 	wrap_plane_clone.visible = false;
 	if( paused_preserve ) pause();
 }
@@ -183,8 +188,13 @@ function set_maximized_list_from_workspace( workspace ){
 	for( var i = 0; i < wlist.length ; i++ )
 		add_to_list( wlist[i] );
 	
-	if( check_maximized() ) pause();
-	else resume();
+	if( in_overview ){
+		paused_preserve = check_maximized();
+	}
+	else{
+		if( check_maximized() ) pause();
+		else resume();
+	}
 }
 
 
@@ -233,7 +243,13 @@ function add_to_list( mwin ) {
 	}
 	added_list.push( mwin );
 	global.log( '    pushing mwin in added_list' );
-	if( check_maximized() ) pause();
+	
+	if( in_overview ){
+		paused_preserve = check_maximized();
+	}
+	else{
+		if( check_maximized() ) pause();
+	}
 	return added_list;
 }
 
@@ -247,7 +263,12 @@ function remove_from_list( mwin ) {
 			break;
 		}
 	}
-	if( !check_maximized() ) resume();
+	if( in_overview ){
+		paused_preserve = check_maximized();
+	}
+	else{
+		if( !check_maximized() ) resume();
+	}
 	return removed_list;
 }
 
