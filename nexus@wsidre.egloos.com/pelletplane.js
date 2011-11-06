@@ -102,16 +102,10 @@ PelletPlane.prototype = {
 		this.set_stepping_timeout(	this._settings.get_int('proceed-timeout') );
 		this.set_spawn_timeout(	this._settings.get_int('spawn-timeout') );
 		this.set_spawn_probability(	this._settings.get_double('spawn-probability') );
-		
-		this.config_screen_size();
+
 	},
 	start: function(){
 		if( !this._started ){
-		
-			this._sigid_screen_change_width =
-				global.stage.connect('notify::width', Lang.bind( this, this.config_screen_size ) );
-			this._sigid_screen_change_height =
-				global.stage.connect('notify::height', Lang.bind( this, this.config_screen_size) );
 		
 			if( ! this._paused ){
 				this._srcid_spawning =
@@ -132,10 +126,6 @@ PelletPlane.prototype = {
 			this.actor.visible = false;
 			Mainloop.source_remove( this._srcid_spawning );
 			Mainloop.source_remove( this._srcid_stepping );
-			if( this._paused ){
-				global.stage.disconnect( this._sigid_screen_change_width );
-				global.stage.disconnect( this._sigid_screen_change_height );
-			}
 		
 			this._started = false;
 		}
@@ -257,7 +247,7 @@ PelletPlane.prototype = {
 			this._pellet_srcs[i].set_width( width );
 		}
 		this.config_step();
-		this.config_screen_size();
+		this.config_pellet_position();
 	},
 	
 	set_pellet_trail_length: function( trail_length ){
@@ -287,15 +277,22 @@ PelletPlane.prototype = {
 		this.config_pellet_center_x();
 	},
 	
-	config_screen_size: function( ){
-		this.swidth = global.stage.width;
-		this.sheight = global.stage.height;
+	set_size: function( swidth, sheight ){
+		this.swidth = swidth;
+		this.sheight = sheight;
 		
-		if( this.pellet_width != undefined ){
+		this.config_pellet_position();
+		this.config_screen_end();
+	},
+	
+	config_pellet_position: function(){
+		if( this.swidth != undefined &&
+			this.sheight != undefined &&
+			this.pellet_width != undefined ){
+			
 			this.xindexe = Math.ceil(this.swidth / this.pellet_width);
 			this.yindexe = Math.ceil(this.sheight / this.pellet_width );
 		}
-		this.config_screen_end();
 	},
 	
 	config_screen_end: function( ){

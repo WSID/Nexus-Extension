@@ -39,6 +39,10 @@ var shandler_map;
 var shandler_destroy;
 var shandler_switch_workspace;
 
+var shandler_screensize_change;
+
+var shandler_workspace_count_change;
+
 var maximized_list;
 var lefttiled_list;
 var righttiled_list;
@@ -48,6 +52,11 @@ var maximized_group;
 var paused;
 var paused_preserve;
 var in_overview;
+
+var swidth;
+var sheight;
+
+var size_incremental_per_workspace = 200;
 
 		/* **** 1. Core functions.		*/
 function setup( ){
@@ -75,6 +84,8 @@ function setup( ){
 	
 	in_overview = false;
 	
+	calculate_ssize();
+	
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
 	shandler_restacked = global.screen.connect("restacked", shand_wrap_plane_lower );
@@ -93,26 +104,39 @@ function setup( ){
 		 * hide at right timing.
 		 */
 	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
-	shandler_hiding = Main.overview.connect("hidden", shand_overview_hidden );
+	shandler_hidden = Main.overview.connect("hidden", shand_overview_hidden );
 	shandler_maximize = Main.wm._shellwm.connect('maximize', shand_maximize );
 	shandler_unmaximize = Main.wm._shellwm.connect('unmaximize', shand_unmaximize );
 	shandler_map = Main.wm._shellwm.connect('map', shand_map );
 	shandler_destroy = Main.wm._shellwm.connect('destroy', shand_destroy );
 	shandler_switch_workspace = Main.wm._shellwm.connect('switch-workspace', shand_switch_workspace );
-	is_setup = true;
+	
+	shandler_screensize_change = global.stage.connect('notify::allocation', shand_screensize_changed );
+	shandler_workspace_count_change = global.screen.connect('notify::n_workspaces', shand_workspace_count_changed );
 	
 	set_maximized_list_from_workspace(
 		global.screen.get_workspace_by_index(
 			global.screen.get_active_workspace_index() ) );
+	is_setup = true;
 	global.log('ActorWrap.setup: done!');
 }
 
 function unsetup( ){
 	if( is_setup ){
+	
+		global.screen.disconnect( shandler_workspace_count_change );
+		global.stage.disconnect( shandler_screensize_change );
+	
 		Main.overview.disconnect( shandler_showing );
-		Main.overview.disconnect( shandler_hiding );
+		Main.overview.disconnect( shandler_hidden );
 		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
 		global.screen.disconnect( shandler_restacked );
+		
+		Main.wm._shellwm.disconnect( shandler_maximize );
+		Main.wm._shellwm.disconnect( shandler_unmaximize );
+		Main.wm._shellwm.disconnect( shandler_map );
+		Main.wm._shellwm.disconnect( shandler_destroy );
+		Main.wm._shellwm.disconnect( shandler_switch_workspace );
 
 		wrap_plane.get_parent().remove_actor( wrap_plane );
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
@@ -180,6 +204,36 @@ function shand_destroy( shellwm, actor ){
 function shand_switch_workspace( shellwm, from, to, direction ){
 	set_maximized_list_from_workspace(
 		global.screen.get_workspace_by_index( to ) );
+	
+	wrap_plane.y = -(size_incremental_per_workspace * to);
+	wrap_plane_clone.y = -(size_incremental_per_workspace * to);
+}
+
+function shand_screensize_changed( screen, key ){
+
+	calculate_ssize();
+	for( var i = 0; i < subplanes.length; i++ )
+		subplanes[i].set_size( swidth, sheight );
+}
+
+function shand_workspace_count_changed( screen, key ){
+	sheight = global.stage.height +
+		((global.screen.get_n_workspaces() - 1) *
+			size_incremental_per_workspace );
+	for( var i = 0; i < subplanes.length; i++ )
+		subplanes[i].set_size( swidth, sheight );
+}
+
+function calculate_ssize(){
+	swidth = global.stage.width;
+	sheight = global.stage.height +
+		((global.screen.get_n_workspaces() - 1) *
+			size_incremental_per_workspace );
+	soffset = global.screen.get_active_workspace_index() *
+		size_incremental_per_workspace;
+	
+	wrap_plane.y =  -soffset;
+	wrap_plane_clone.y = -soffset;
 }
 
 function set_maximized_list_from_workspace( workspace ){
@@ -196,7 +250,6 @@ function set_maximized_list_from_workspace( workspace ){
 		else resume();
 	}
 }
-
 
 function add_to_list( mwin ) {
 	global.log( 'add_to_list(' + mwin + ')' );
@@ -294,6 +347,7 @@ function remove_actor( actor ){
 function add_plane( plane ){
 	subplanes.push( plane );
 	wrap_plane.add_actor( plane.actor );
+	plane.set_size( swidth, sheight );
 }
 
 function remove_plane( plane ){
