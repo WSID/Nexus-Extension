@@ -14,6 +14,7 @@
 const Lang = imports.lang;
 const Signals = imports.signals;
 const Main = imports.ui.main;
+const Tweener = imports.ui.tweener;
 
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
@@ -62,6 +63,8 @@ var sheight;
 var soffset;
 
 var size_incremental_per_workspace = 100;
+
+var slide_duration = 0.5;
 
 
 var shellwm = Main.wm._shellwm;
@@ -224,8 +227,22 @@ function shand_workspace_count_changed( screen, count ){
 }
 
 function shand_switch_workspace( shellwm, to ){
-	wrap_plane.y = -(size_incremental_per_workspace * to);
-	wrap_plane_clone.y = -(size_incremental_per_workspace * to);
+	Tweener.addTween( wrap_plane,
+		{ time: slide_duration,
+		  transition: 'easeOutQuad',
+		  onComplete: shand_switch_workspace_tween_completed,
+		  y: -(size_incremental_per_workspace * to) } );
+	Tweener.addTween( wrap_plane_clone,
+		{ time: slide_duration,
+		  transition: 'easeOutQuad',
+		  onComplete: shand_switch_workspace_tween_completed,
+		  y: -(size_incremental_per_workspace * to) } );
+	global.log("YAHOPO");
+}
+
+function shand_switch_workspace_tween_completed( ){
+	Tweener.removeTweens( this );
+	global.log("Can you hear me?");
 }
 
 function calculate_ssize(){
