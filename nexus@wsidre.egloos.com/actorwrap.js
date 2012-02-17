@@ -315,7 +315,8 @@ MaximizeDetector.prototype = {
 		for( let i in this.CONNECT_LIST ){
 			let con = this.CONNECT_LIST[i].replace( '-', '_' );
 			this._shandlers.push(
-				shellwm.connect( CONNECT_LIST[i], Lang.bind( this, this[ '_sh_' + con ] ) ) );
+				shellwm.connect( this.CONNECT_LIST[i],
+								 Lang.bind( this, this[ '_sh_' + con ] ) ) );
 		}
 	},
 	
