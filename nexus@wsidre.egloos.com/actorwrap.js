@@ -104,7 +104,7 @@ function setup( ){
 //		this._switchWorkspaceDone_orig__nexus( shellwm );
 //		shand_wrap_plane_lower();
 //	}
-	shandler_kill_switch_workspace = Main.wm._shellwm.connect(
+	shandler_kill_switch_workspace = Main.wm._shellwm.connect_after(
 		'kill-switch-workspace', shand_wrap_plane_lower );
 	
 	
@@ -315,7 +315,7 @@ MaximizeDetector.prototype = {
 		for( let i in this.CONNECT_LIST ){
 			let con = this.CONNECT_LIST[i].replace( '-', '_' );
 			this._shandlers.push(
-				shellwm.connect( con, Lang.bind( this, this[ '_sh_' + con ] ) ) );
+				shellwm.connect( CONNECT_LIST[i], Lang.bind( this, this[ '_sh_' + con ] ) ) );
 		}
 	},
 	
