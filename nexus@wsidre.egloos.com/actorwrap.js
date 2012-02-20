@@ -58,6 +58,7 @@ var paused;
 var paused_preserve;
 var in_overview;
 
+// Screen size
 var swidth;
 var sheight;
 var soffset;
@@ -69,9 +70,13 @@ var slide_duration = 0.5;
 
 var shellwm = Main.wm._shellwm;
 
-		/* **** 1. Core functions.		*/
+/* **** 1. Core functions. ****************************************************/
+
+	/* setup: void
+	 * Initialize actor wrapper */
 function setup( ){
 	
+	/* Initializes subplanes and actors */
 	subplanes = new Array();
 	
 	wrap_plane = new Clutter.Group();
@@ -87,6 +92,7 @@ function setup( ){
 	wrap_plane_clone.raise( overview_plane );
 	wrap_plane_clone.visible = false;
 	
+	/* Initializes detectors */
 	maximized_detector = new MaximizeDetector( Main.wm._shellwm );
 	workspace_indexer = new WorkspaceIndexer()
 	
@@ -94,6 +100,7 @@ function setup( ){
 	
 	calculate_ssize();
 	
+	/* Connects signals */
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
 	shandler_restacked = global.screen.connect("restacked", shand_wrap_plane_lower );
@@ -102,13 +109,11 @@ function setup( ){
 		 * as wrap_plane tends to raise above windows after switching work-
 		 * spaces (and after restacking windows).
 		 * Chaining up original function to fit any version of shell.	*/
-//	Main.wm._switchWorkspaceDone_orig__nexus = Main.wm._switchWorkspaceDone;
-//	Main.wm._switchWorkspaceDone = function( shellwm ){
-//		this._switchWorkspaceDone_orig__nexus( shellwm );
-//		shand_wrap_plane_lower();
-//	}
-	shandler_kill_switch_workspace = Main.wm._shellwm.connect_after(
-		'kill-switch-workspace', shand_wrap_plane_lower );
+	Main.wm._switchWorkspaceDone_orig__nexus = Main.wm._switchWorkspaceDone;
+	Main.wm._switchWorkspaceDone = function( shellwm ){
+		this._switchWorkspaceDone_orig__nexus( shellwm );
+		shand_wrap_plane_lower();
+	}
 	
 	
 		/* Connect Signal handlers for wrap_plane_clone to show and
@@ -131,11 +136,13 @@ function setup( ){
 		global.screen.get_workspace_by_index(
 			global.screen.get_active_workspace_index() ) );
 	is_setup = true;
-	global.log('ActorWrap.setup: done!');
 }
 
 function unsetup( ){
 	if( is_setup ){
+		
+		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
+		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
 		workspace_indexer.disconnect( shandler_workspace_count_change );
 		workspace_indexer.disconnect( shandler_switch_workspace );
@@ -168,7 +175,7 @@ function unsetup( ){
 	}
 }
 
-	/** shand_wrap_plane_lower: void
+	/** shand_wrap_plane_lower: bool
 	 * When windows are restacked and wrap_plane goes on top of them, this
 	 * will move it below of them.
 	 */
@@ -206,45 +213,68 @@ function shand_maximized(){
 	if( in_overview ) paused_preserve = true;
 	else pause();
 }
-
+	/** shand_unmaximized: void
+	 * When Unmaximized state detected.
+	 */
 function shand_unmaximized(){
 	if( in_overview ) paused_preserve = false;
 	else resume();
 }
 
-function shand_screensize_changed( screen, key ){
+	/** shand_screensize_changed: void
+	 * When screen resolution is changed, it updates screen size it kepts.
+	 *
+	 * screen: Meta.Screen:			signal source.
+	 * pspec: GObject.ParamSpec:	property spec.
+	 */
+function shand_screensize_changed( screen, pspec ){
 
 	calculate_ssize();
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( swidth, sheight );
 }
 
-function shand_workspace_count_changed( screen, count ){
+	/** shand_workspace_count_changed: void
+	 * When workspaces are increased or decreased, it updates plane heights to
+	 * provide constant shifting amount when switching workspaces.
+	 *
+	 * windexer: WorkspaceIndexer:	signal source.
+	 * count: int:					workspace count.
+	 */
+function shand_workspace_count_changed( windexer, count ){
 	sheight = global.stage.height +
 		( (count - 1) * size_incremental_per_workspace );
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( swidth, sheight );
 }
 
+	/** shand_switch_workspace: void
+	 * When switching workspace, put sliding animation to planes.
+	 *
+	 * shellwm: Shell.WM:	signal source.
+	 * to: int:				index of destination workspace.
+	 */
 function shand_switch_workspace( shellwm, to ){
-	Tweener.addTween( wrap_plane,
-		{ time: slide_duration,
-		  transition: 'easeOutQuad',
-		  onComplete: shand_switch_workspace_tween_completed,
-		  y: -(size_incremental_per_workspace * to) } );
-	Tweener.addTween( wrap_plane_clone,
-		{ time: slide_duration,
-		  transition: 'easeOutQuad',
-		  onComplete: shand_switch_workspace_tween_completed,
-		  y: -(size_incremental_per_workspace * to) } );
-	global.log("YAHOPO");
+	let anim_param = { time:		slide_duration,
+					   transition:	'easeOutQuad',
+					   onComplete:	shand_switch_workspace_tween_completed,
+					   y: -(size_incremental_per_workspace * to) };
+	
+	Tweener.addTween( wrap_plane, anim_param );
+	Tweener.addTween( wrap_plane_clone, anim_param );
 }
 
+	/** shand_switch_workspace_tween_completed: void
+	 * When animation during switching workspace done, removes tweens from it.
+	 */
 function shand_switch_workspace_tween_completed( ){
 	Tweener.removeTweens( this );
-	global.log("Can you hear me?");
 }
 
+	/** calculate_ssize: void
+	 * Updates screen size and offset according to global.stage size and current
+	 * index of workspace.
+	 */
 function calculate_ssize(){
 	swidth = global.stage.width;
 	sheight = global.stage.height +
@@ -257,21 +287,42 @@ function calculate_ssize(){
 	wrap_plane_clone.y = -soffset;
 }
 
-		/* **** 2. Public functions to add or remove actor to wrap.	*/
+/* **** 2. Public functions to add or remove actor to wrap. *******************/
+	/** add_actor: void
+	 * Adds actor to wrap.
+	 * Added actor will be resized according to screen size, count of workspaces.
+	 *
+	 * actor: Clutter.Actor:	Actor to be managed.
+	 */
 function add_actor( actor ){
 	wrap_plane.add_actor( actor );
 }
 
+	/** remove_actor: void
+	 * Removes actor being wrapped.
+	 *
+	 * actor: Clutter.Actor:	Actor to be removed.
+	 */
 function remove_actor( actor ){
 	wrap_plane.remove_actor( actor );
 }
 
+	/** add_plane: void
+	 * Adds plane to wrap.
+	 *
+	 * plane: PelletPlane:	Plane to be managed.
+	 */
 function add_plane( plane ){
 	subplanes.push( plane );
 	wrap_plane.add_actor( plane.actor );
 	plane.set_size( swidth, sheight );
 }
 
+	/** remove_plane: void
+	 * Removes plane to wrap.
+	 *
+	 * plane: PelletPlane: Plane to be removed.
+	 */
 function remove_plane( plane ){
 	subplanes.pop( plane );
 	wrap_plane.remove_actor( plane.actor );
