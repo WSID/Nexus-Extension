@@ -343,24 +343,28 @@ function resume(){
 }
 
 
-	/* **** 3. Classes ********************************************************/
+/* **** 3. Classes ************************************************************/
 
+	/* MaximizeDetector: object
+	 * Detects if the windows has been maximized and emits signals.
+	 *
+	 * Tiled windows are treated specially - if two ( or more ) windows are
+	 * tiled and placed both of side, they are considered to be maximized.
+	 *
+	 * Signals:
+	 *	maximized() : void		: emitted when one of windows wrap screen.
+	 *	unmaximized() : void	: emitted when all maximized windows
+	 *							 unmaximized.
+	 */
 function MaximizeDetector( workspace ){
 	this._init( workspace );
 }
 
 MaximizeDetector.prototype = {
-	// Signals:
-	//	signals are only emitted when state is changed. If two half-maximized
-	// windows are placed both left and right, they considered as one maximized
-	// window.
-	//
-	//	maximized()		: emitted when one of windows wrap screen.
-	//	unmaximized()	: emitted when none of windows wraps screen.
-	
 	// In Class Constants
 	CONNECT_LIST: new Array('minimize', 'maximize', 'unmaximize', 'map',
 							'destroy', 'switch-workspace' ),
+	
 	
 	_init: function( workspace ){
 		this.maximized_list = new Array();
@@ -374,6 +378,10 @@ MaximizeDetector.prototype = {
 			workspace = global.screen.get_workspace_by_index( 0 );
 	},
 	
+		/* connect_signals_to: void
+		 * Connects handlers to necessary signals in order to detect maximized
+		 * state.
+		 */
 	connect_signals_to: function( shellwm ){
 		if( '_shandlers' in this ) return;
 		
@@ -388,6 +396,9 @@ MaximizeDetector.prototype = {
 		}
 	},
 	
+		/* disconnect_signals: void
+		 * Disconnects handlers from signals.
+		 */
 	disconnect_signals: function( ){
 		if( '_shandlers' in this ){
 			for( let i in this._shandlers ){
@@ -398,18 +409,28 @@ MaximizeDetector.prototype = {
 		delete this._shandlers;
 	},
 	
+		/* add_window: void
+		 * (Try to) add maximized list.
+		 * NOTE: maximized windows and tiled windows are added in different lists.
+		 *
+		 * mwin: Meta.Window	: window to add to.
+		 */
 	add_window: function( mwin ){
 		let list_to_add = null;
 		
 		if( mwin.is_fullscreen() ){
 			list_to_add = this.maximized_list;
 		}
-		else if( ( mwin.get_maximized() & Meta.MaximizeFlags.VERTICAL ) > 0 ){
+		else if( mwin.get_maximized() & Meta.MaximizeFlags.VERTICAL ){
 			
-			if( ( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL ) > 0 )
+			if( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL )
 				list_to_add = this.maximized_list;
-			else if(mwin.get_outer_rect().x == 0)
+			
+			//If mwin is lefttiled so x is 0
+			else if( mwin.get_outer_rect().x == 0 )
 				list_to_add = this.lefttiled_list;
+			
+			//Otherwise ( =righttiled )
 			else
 				list_to_add = this.righttiled_list;
 		}
@@ -424,6 +445,11 @@ MaximizeDetector.prototype = {
 		this._check_and_emit_signal();
 	},
 	
+		/* remove_window: void
+		 * (Try to) remove from maximized list.
+		 *
+		 * mwin : Meta.Window	: window to remove from.
+		 */
 	remove_window: function( mwin ){
 		this._ensure_nonexist( mwin, this.maximized_list,
 									 this.lefttiled_list,
@@ -432,6 +458,9 @@ MaximizeDetector.prototype = {
 		this._check_and_emit_signal();
 	},
 	
+		/* clean_list: void
+		 * Clean out maximized window list.
+		 */
 	clean_list: function(){
 		this._clean_array( this.maximized_list,
 						   this.lefttiled_list,
@@ -440,6 +469,12 @@ MaximizeDetector.prototype = {
 		this._check_and_emit_signal();
 	},
 	
+		/* set_from_workspace: void
+		 * Adds all maximized windows from workspace to list.
+		 * Before adding windows, lists are cleaned.
+		 *
+		 * workspace: Meta.Workspace	: Workspace to get windows.
+		 */
 	set_from_workspace: function( workspace ){
 		let wlist = workspace.list_windows();
 		this.clean_list();
@@ -451,6 +486,9 @@ MaximizeDetector.prototype = {
 	
 	// State changes and notification
 	
+		/* _check_and_emit_signal: void
+		 * checks maximized states and emits signals when needed.
+		 */
 	_check_and_emit_signal: function( ){
 		let old_maximized = this.maximized;
 		this.maximized = ( this.maximized_list.length != 0 ) ||
@@ -491,10 +529,18 @@ MaximizeDetector.prototype = {
 	
 	// Private array operations
 	
+		/* _ensure_nonexist: bool
+		 * Checks if element is in arrays and removes it from array.
+		 *
+		 * element: (anything)	: element to check.
+		 * ...: Array...		: arrays to check.
+		 *
+		 * Return: Whether elemet is in any of arrays.
+		 */
 	_ensure_nonexist: function( element ){
-		for( let i = 1; i < arguments.length; i++ ){
-			for( let j = 0; j < arguments[i].length ; j++ ){
-				if( arguments[i][j] == element ){
+		for( let i in arguments ){
+			for( let j in arguments[i] ){
+				if( arguments[i][j] === element ){
 					arguments[i].splice( j, 1 );
 					return true;
 				}
@@ -503,13 +549,18 @@ MaximizeDetector.prototype = {
 		return false;
 	},
 	
+		/* _clean_array: void
+		 * Cleans given arrays.
+		 */
 	_clean_array: function(){
-		for( let i = 0; i < arguments.length; i++ ){
+		for( let i in arguments ){
 			arguments[i].splice( 0, arguments[i].length );
 		}
 	}
 };
 Signals.addSignalMethods( MaximizeDetector.prototype );
+
+
 
 function WorkspaceIndexer(){
 	this._init();
