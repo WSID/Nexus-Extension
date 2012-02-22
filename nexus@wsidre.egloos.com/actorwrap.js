@@ -561,23 +561,30 @@ MaximizeDetector.prototype = {
 Signals.addSignalMethods( MaximizeDetector.prototype );
 
 
-
+	/* WorkspaceIndexer: object
+	 * Detects workspace counts and index of current workspace.
+	 *
+	 * Signals:
+	 *	count-changed( count ) : void	: emitted when a workspace is added or
+	 *										removed.
+	 *		count : int					: count of workspaces.
+	 *	index-changed( index ) : void	: emitted when user switches workspace
+	 *										or one of previous workspaces
+	 *										removed.
+	 *		index : int					: index of current workspace.
+	 */
 function WorkspaceIndexer(){
 	this._init();
 }
 
 WorkspaceIndexer.prototype = {
-	//Signals
-	//
-	// for convenience, count-changed is emitted first, and index-changed is
-	// emitted when both of them are emitted.
-	//count-changed()
-	//index-changed()
-	
 	_init: function(){
-		
 	},
 	
+		/* connect_signals_to: void
+		 * Connects handlers to necessary signals in order to detect maximized
+		 * state.
+		 */
 	connect_signals: function(){
 		this.shandler_count_changed = global.screen.connect(
 			'notify::n-workspaces',
@@ -588,12 +595,17 @@ WorkspaceIndexer.prototype = {
 			Lang.bind( this, this._sh_workspace_switched ) );
 	},
 	
+		/* disconnect_signals: void
+		 * Disconnects handlers from signals.
+		 */
 	disconnect_signals: function(){
 		global.screen.disconnect( this.shandler_count_changed );
 		Main.wm._shellwm.disconnect( this.shandler_switched );
 		delete this.shandler_count_changed;
 		delete this.shandler_switched;
 	},
+	
+	/* **** signal handlers ***************************************************/
 	
 	_sh_workspace_count_changed: function( screen, pspec ){
 		this.emit_with_count_index(
@@ -607,6 +619,12 @@ WorkspaceIndexer.prototype = {
 			global.screen.get_active_workspace_index() );
 	},
 	
+		/* emit_with_count_index: void
+		 * Update and check current states and emit signals if necessary.
+		 *
+		 * new_wcount: int	: new workspace count.
+		 * new_windex: int	: new workspace index.
+		 */
 	emit_with_count_index: function( new_wcount, new_windex ){
 		
 		if( this.workspace_count != new_wcount )
