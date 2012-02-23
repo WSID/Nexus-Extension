@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const Cairo = imports.cairo;
 const Gdk = imports.gi.Gdk;
 
+const St = imports.gi.St;
 const Lang = imports.lang;
 
 	/** Direction:
@@ -116,11 +117,12 @@ PelletSource.prototype = {
 		if( this.use_default_alpha ){
 			this.cstruct.alpha = default_alpha;
 		}
-		this.actor = new Clutter.CairoTexture();
+		this.actor = new St.DrawingArea();
+		this.actor.connect( 'repaint', Lang.bind(this, this._paint) );
 		
 		this.set_dimension( width, trail_length, glow_radius );
-		
 		this.actor.visible = false;
+		
 	},
 	
 	set_width: function( width ){
@@ -139,7 +141,7 @@ PelletSource.prototype = {
 		this.width = width;
 		this.trail_length = trail_length;
 		this.glow_radius = glow_radius;
-		this._paint();
+		this.queue_repaint();
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	},
 	
@@ -150,15 +152,34 @@ PelletSource.prototype = {
 		if( this.use_defalut_alpha ){
 			this.cstruct.alpha = this.default_alpha;
 		}
-		this._paint();
+		this.queue_repaint();
 	},
 	
 	set_default_alpha: function( alpha ){
 		this.default_alpha = alpha;
 		if( this.use_default_alpha ){
 			this.cstruct.alpha = alpha;
-			this._paint();
+			this.queue_repaint();
 		}
+	},
+	
+	queue_repaint: function(){
+		this._center_x = Math.max(this.glow_radius, this.trail_length);
+		this._half_width = this.width / 2;
+	
+		this._trail_start	= this._center_x - this.trail_length;
+		this._trail_end	= this._center_x + this._half_width;
+	
+		this._glow_start = this._center_x - this.glow_radius;
+		this._glow_end = this._center_x + this.glow_radius;
+	
+		this._surface_width = this._center_x + this.glow_radius;
+		this._surface_height = this.glow_radius * 2;
+		
+		this.actor.width = this._surface_width;
+		this.actor.height = this._surface_height;
+		
+		this.actor.queue_repaint();
 	},
 		/** paint: void
 		 * Paints colorized energy pellet. It uses cairo rather than images.
@@ -175,27 +196,14 @@ PelletSource.prototype = {
 		 *				 or string			: String representation that read by
 		 *									  Gdk.RGBA.parse
 		 */
-	_paint: function (){
-		let center_x = Math.max(this.glow_radius, this.trail_length);
-	
-		let trail_start	= center_x - this.trail_length;
-		let trail_end	= center_x + (this.width / 2);
-	
-		let glow_start = center_x - this.glow_radius;
-		let glow_end = center_x + this.glow_radius;
-	
-		let surface_width = center_x + this.glow_radius;
-		let surface_height = this.glow_radius << 1;
-		
-		this.actor['surface-width'] = surface_width;
-		this.actor['surface-height'] = surface_height;
-		this.actor.width = surface_width;
-		this.actor.height = surface_height;
-
-		let context = this.actor.create();
+	_paint: function ( actor ){
+		let context = actor.get_context();
 	
 		/* Draw Trailing with Linear Gradient */
-		let trailing_pat = new Cairo.LinearGradient(0, trail_start, trail_end,	0 );
+		let trailing_pat = new Cairo.LinearGradient(0,
+													this._trail_start,
+													this._trail_end,
+													0 );
 		trailing_pat.addColorStopRGBA( 0,	this.cstruct.red,
 											this.cstruct.green,
 											this.cstruct.blue,
@@ -206,13 +214,21 @@ PelletSource.prototype = {
 											this.cstruct.alpha );
 
 			context.setSource( trailing_pat );
-			context.rectangle( trail_start, this.glow_radius - (this.width / 2),
-							   trail_end - trail_start, this.width );
+			context.rectangle( this._trail_start,
+							   this.glow_radius - this._half_width,
+							   this._trail_end - this._trail_start,
+							   this.width );
 			context.fill( );
 
 		/* Draw glowing with Radial Gradient */
-		let glow_pat = new Cairo.RadialGradient( center_x, this.glow_radius, this.width / 2,
-												 center_x, this.glow_radius, this.glow_radius );
+		let glow_pat = new Cairo.RadialGradient( this._center_x,
+												 this.glow_radius,
+												 this._half_width,
+												 
+												 this._center_x,
+												 this.glow_radius,
+												 this.glow_radius );
+		
 		glow_pat.addColorStopRGBA( 0,	this.cstruct.red,
 										this.cstruct.green,
 										this.cstruct.blue,
@@ -222,10 +238,10 @@ PelletSource.prototype = {
 										this.cstruct.blue, 0 );
 
 			context.setSource( glow_pat );
-			context.rectangle( glow_start, 0,
-							   glow_end - glow_start, surface_height );
+			context.rectangle( this._glow_start,
+							   0,
+							   this._glow_end - this._glow_start,
+							   this._surface_height );
 			context.fill( );
-		context = null;
 	}
-
 }
