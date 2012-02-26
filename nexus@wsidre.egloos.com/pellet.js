@@ -19,16 +19,31 @@ const Direction = {
 	UP		: 3
 }
 
+	/* is_have_alpha_part: bool
+	 * Checks if given representation has alpha part and return result.
+	 * Used to determine which alpha to use, default alpha value or color's own
+	 * alpha value.
+	 *
+	 * color: string or	: Color representation which Gdk.RGBA.parse() understand.
+	 *		  object	: Color object.
+	 */
 function is_have_alpha_part( color ){
 	if( typeof(color) == 'string' ){
 		return 	(color.charAt(0) != '#') && //#rrggbb has no alpha param
-				(color.charAt(3) == 'a') ;  //rgba has alpha param
+				(color.charAt(3) == 'a') ;  //rgba() has alpha param
 	}
 	else{
-		return color.alpha != null;
+		return 'alpha' in color;
 	}
 }
 
+	/* make_cstruct: object
+	 * Constructs color object with given object.
+	 *
+	 * color: string or object	: Color representation.
+	 *
+	 * Return: Paresd color object.
+	 */
 function make_cstruct( color ){
 	let result;
 	if( typeof(color) == 'string' ){
@@ -42,7 +57,7 @@ function make_cstruct( color ){
 	else return color;
 }
 
-/* **** 1. Pellet ***** */
+/* **** 1. Pellet *********************************************************** */
 
 	/** Pellet:
 	 * Representation of pellet
@@ -55,8 +70,9 @@ function Pellet( ) {
 
 
 Pellet.prototype = {
-	//_step_x: double
-	//_step_y: double
+	// Instance variables
+	//	double _step_x	: stepping length in x axis
+	//	double _step_y	: stepping length in y axis
 	
 	_init: function( ) {
 		this.actor = new Clutter.Clone({});
@@ -69,10 +85,18 @@ Pellet.prototype = {
 		this.actor.move_by( this._step_x, this._step_y );
 
 	},
+		/* set_source: void
+		 * Sets pellet source.
+		 *
+		 * psrc: PelletSource	: Pellet source.
+		 */
 	set_source: function( psrc ) {
 		this.actor.source = psrc.actor;
 		this.sync_anchor();
 	},
+		/* sync_anchor: void
+		 * Synchronize anchor between this and pellet source.
+		 */
 	sync_anchor: function() {
 		this.actor.set_anchor_point( this.actor.source.anchor_x,
 									 this.actor.source.anchor_y );
@@ -80,7 +104,7 @@ Pellet.prototype = {
 };
 
 
-/* **** 2. PelletSource.	***** */
+/* **** 2. PelletSource. **************************************************** */
 
 	/** PelletSource:
 	 * visual source of pellet.
@@ -90,25 +114,22 @@ function PelletSource( width, trail_length, glow_radius, color, default_alpha ) 
 }
 
 PelletSource.prototype = {
-	//TODO(0.6): drop using Clutter.CairoTexture.create() 
-	//			 Instead use draw signal
+	// Instance variables
+	//	double width			: Pellet source's width
+	//	double trail_length		: Pellet source's trail length
+	//	double glow_radius		: Pellet source's glowing radius
+	//
+	//	object cstruct			: Pellet source's color
+	//		double red			: red component
+	//		double green		: green component
+	//		double blue			: blue component
+	//		double alpha		: alpha component - if don't exist,
+	//							 default_alpha will be used instead
+	//	double default_alpha	: Alpha value when alpha component is missing.
+	//	bool use_defalut_alpha	: Is alpha is missing
+	//
+	//	St.DrawingArea actor	: actor.
 	
-	//Dimension Information
-	//	width:				double
-	//	trail_length:		double
-	//	glow_radius:		double
-	//Color Information
-	//	cstruct:			object{
-	//							red:	double
-	//							green:	double
-	//							blue:	double
-	//							alpha:	double
-	//						}
-	//	default_alpha:		double
-	//	use_defalut_alpha:	bool
-	//Misc
-	//	actor: 				Clutter.CairoTexture
-
 	_init: function ( width, trail_length, glow_radius, color, default_alpha ){
 		this.default_alpha = default_alpha;
 		this.color = color;
@@ -125,14 +146,29 @@ PelletSource.prototype = {
 		
 	},
 	
+		/* set_width: void
+		 * set pellet source's width ( Not size in x axis )
+		 *
+		 * width: double	: pellet source's width
+		 */
 	set_width: function( width ){
 		this.set_dimension( width, this.trail_length, this.glow_radius );
 	},
 	
+		/* set_trail_length: void
+		 * set pellet source's trail length.
+		 *
+		 * trail_length: double	: pellet source's trail length.
+		 */
 	set_trail_length: function( trail_length ){
 		this.set_dimension( this.width, trail_length, this.glow_radius );
 	},
 	
+		/* set_glow_radius: void
+		 * set pellet source's glow radius.
+		 *
+		 * glow_radius: double	: pellet source's glowing radius.
+		 */
 	set_glow_radius: function( glow_radius ){
 		this.set_dimension( this.width, this.trail_length, glow_radius );
 	},
