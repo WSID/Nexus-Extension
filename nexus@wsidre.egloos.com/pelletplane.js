@@ -14,6 +14,8 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
 const Direction = Pellet.Direction
 
+const PELLET_MIN_SPEED = 10;
+
 function PelletPlane( settings ){
 	this._init( settings );
 }
@@ -86,10 +88,7 @@ PelletPlane.prototype = {
 		this._pellet_srcs = new Array(0);
 		
 		//Set pellet parameters from settings
-		let speed = settings.get_value( 'speed' ).deep_unpack();
-		global.log( "a: " + speed[0] + ", b: " + speed[1] );
-		this.set_pellet_speed_min( speed[0] );
-		this.set_pellet_speed_max( speed[1] );
+		this.set_pellet_speed.apply( this, settings.get_value( 'speed' ).deep_unpack() );
 		
 		this.set_pellet_dimension(	this._pellet_settings.get_double('width'),
 									this._pellet_settings.get_double('trail-length'),
@@ -152,11 +151,11 @@ PelletPlane.prototype = {
 		this.offset_x = ( ( offset_x + half_width ) % this.pellet_width );
 		this.offset_y = ( ( offset_y + half_width ) % this.pellet_width );
 		this.offset_x = this.offset_x < 0 ?
-						this.offset_x + this.pellet_width :
-						this.offset_x;
+							this.offset_x + this.pellet_width :
+							this.offset_x;
 		this.offset_y = this.offset_y < 0 ?
-						this.offset_y + this.pellet_width :
-						this.offset_y;
+							this.offset_y + this.pellet_width :
+							this.offset_y;
 		this.actor.set_anchor_point( this.offset_x,
 									 this.offset_y );
 	},
@@ -183,6 +182,25 @@ PelletPlane.prototype = {
 	},
 	set_spawn_probability: function( probability ){
 		this.spawn_probability = probability;
+	},
+	
+	set_pellet_speed: function( speed_min, speed_max ){
+		if( speed_min > speed_max ){
+			var temp = speed_max;
+			speed_max = speed_min;
+			speed_min = temp;
+		}
+		
+		if( speed_min < PELLET_MIN_SPEED ){
+			speed_min = PELLET_MIN_SPEED;
+			if( speed_max < PELLET_MIN_SPEED ){
+				speed_max = PELLET_MIN_SPEED;
+			}
+		}
+		
+		this.pellet_speed_min = speed_min;
+		this.pellet_speed_max = speed_max;
+		this.config_step();
 	},
 	
 	set_pellet_speed_min: function( speed ){
@@ -225,7 +243,7 @@ PelletPlane.prototype = {
 			
 				//Add pellet source to realize it.
 			this.actor.add_actor( pellet_src.actor );
-			pellet_src._paint();
+			pellet_src.queue_repaint();
 			pellet_src.actor.visible = false;
 		}
 		this._is_postponed_color_init = false;
@@ -329,7 +347,6 @@ PelletPlane.prototype = {
 	},
 	
 	sigh_plane_settings_changed: function( settings, key ){
-			if( ! settings ) global.log( "Is there settings had been null?" );
 		switch( key ){
 		case 'offset':
 			this.set_offset.apply( this, settings.get_value( key ).deep_unpack() );
@@ -344,10 +361,7 @@ PelletPlane.prototype = {
 			this.set_spawn_probability( settings.get_double( key ) );
 			break;
 		case 'speed':
-			let speed = settings.get_value( key ).deep_unpack();
-			global.log( "a: " + speed[0] + ", b: " + speed[1] );
-			this.set_pellet_speed_min( speed[0] );
-			this.set_pellet_speed_max( speed[1] );
+			this.set_pellet_speed.apply( this, settings.get_value( key ).deep_unpack() );
 			break;
 		case 'pellet-directions':
 			this.set_pellet_directions( settings.get_strv( key ) );
