@@ -497,6 +497,32 @@ MaximizeDetector.prototype = {
 		this._check_and_emit_signal();
 	},
 	
+		/* _window_determine_list: Array
+		 * Determine which list the window should added.
+		 *
+		 * mwin: Meta.Window	: window to check.
+		 *
+		 * Return: list to add window.
+		 */
+	_window_determine_list: function( mwin ){
+		if( mwin.is_fullscreen() ){
+			return this.maximized_list;
+		}
+		else if( mwin.get_maximized() & Meta.MaximizeFlags.VERTICAL ){
+			if( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL ){
+				return this.maximized_list;
+			}
+			//If mwin is lefttiled so x is 0
+			else if( mwin.get_outer_rect().x == 0 ){
+				return this.lefttiled_list;
+			}
+			//Otherwise ( =righttiled )
+			else{
+				return this.righttiled_list;
+			}
+		}
+		return null;
+	},
 	/* **** State changes and notification ************************************/
 	
 		/* _check_and_emit_signal: void
