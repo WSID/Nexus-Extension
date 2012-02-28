@@ -46,7 +46,7 @@ var shandler_restacked;
 var shandler_showing;
 var shandler_hidden;
 
-// Signal Handlers to maximized_detector
+// Signal Handlers to maximized_detector and workspace_indexer
 var shandler_maximized;
 var shandler_unmaximized;
 
@@ -58,7 +58,8 @@ var paused;
 var paused_preserve;
 var in_overview;
 
-// Screen size
+// __Screen size__ Plane size
+// TODO: Change their name.
 var swidth;
 var sheight;
 var soffset;
@@ -361,10 +362,20 @@ function MaximizeDetector( workspace ){
 }
 
 MaximizeDetector.prototype = {
-	// In Class Constants
+	/* **** In Class Constants ************************************************/
+	
+		/* Names of signals which this object connects to. */
 	CONNECT_LIST: new Array('minimize', 'maximize', 'unmaximize', 'map',
 							'destroy', 'switch-workspace' ),
 	
+	// Instance variable list
+	//	bool maximized			: state of detector.
+	//	Array maximized_list	: list of maximized windows.
+	//	Array lefttiled_list	: list of left-tiled windows.
+	//	Array righttiled_list	: list of right-tiled windows.
+	//
+	//	Shell.WM _shellwm		: event source.
+	//	Array _shandlers		: list of signal handlers.
 	
 	_init: function( workspace ){
 		this.maximized_list = new Array();
@@ -373,7 +384,6 @@ MaximizeDetector.prototype = {
 		
 		this.maximized = false;
 		
-		//If it is initialized without workspaces, starts with 0th workspace.
 		if( workspace == undefined )
 			workspace = global.screen.get_workspace_by_index( 0 );
 	},
@@ -418,24 +428,27 @@ MaximizeDetector.prototype = {
 	add_window: function( mwin ){
 		let list_to_add = null;
 		
+		// Phase 1 : Determine which list to add mwin.
 		if( mwin.is_fullscreen() ){
 			list_to_add = this.maximized_list;
 		}
 		else if( mwin.get_maximized() & Meta.MaximizeFlags.VERTICAL ){
-			
-			if( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL )
+			if( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL ){
 				list_to_add = this.maximized_list;
-			
+			}
 			//If mwin is lefttiled so x is 0
-			else if( mwin.get_outer_rect().x == 0 )
+			else if( mwin.get_outer_rect().x == 0 ){
 				list_to_add = this.lefttiled_list;
-			
+			}
 			//Otherwise ( =righttiled )
-			else
+			else{
 				list_to_add = this.righttiled_list;
+			}
 		}
 		else return;
 		
+		
+		// Phase 2 : Adding mwin ( and remove )
 		this._ensure_nonexist( mwin, this.maximized_list,
 									 this.lefttiled_list,
 									 this.righttiled_list )
@@ -484,7 +497,7 @@ MaximizeDetector.prototype = {
 		this._check_and_emit_signal();
 	},
 	
-	// State changes and notification
+	/* **** State changes and notification ************************************/
 	
 		/* _check_and_emit_signal: void
 		 * checks maximized states and emits signals when needed.
@@ -493,7 +506,7 @@ MaximizeDetector.prototype = {
 		let old_maximized = this.maximized;
 		this.maximized = ( this.maximized_list.length != 0 ) ||
 						 ( ( this.lefttiled_list.length != 0 ) &&
-						   ( this.righttiled_list.length != 0 ) );
+						   ( this.righttiled_list.length != 0 )   );
 		
 		if( ( !old_maximized ) && ( this.maximized ) )
 			this.emit("maximized")
@@ -501,7 +514,7 @@ MaximizeDetector.prototype = {
 			this.emit("unmaximized")
 	},
 	
-	// Signal handlers
+	/* **** Signal handlers ***************************************************/
 	
 	_sh_minimize: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
@@ -527,7 +540,7 @@ MaximizeDetector.prototype = {
 		this.set_from_workspace( global.screen.get_workspace_by_index( to ) );
 	},
 	
-	// Private array operations
+	/* **** Private array operations ******************************************/
 	
 		/* _ensure_nonexist: bool
 		 * Checks if element is in arrays and removes it from array.
@@ -566,11 +579,11 @@ Signals.addSignalMethods( MaximizeDetector.prototype );
 	 *
 	 * Signals:
 	 *	count-changed( count ) : void	: emitted when a workspace is added or
-	 *										removed.
+	 *									 removed.
 	 *		count : int					: count of workspaces.
 	 *	index-changed( index ) : void	: emitted when user switches workspace
-	 *										or one of previous workspaces
-	 *										removed.
+	 *									 or one of previous workspaces
+	 *									 removed.
 	 *		index : int					: index of current workspace.
 	 */
 function WorkspaceIndexer(){
@@ -578,6 +591,14 @@ function WorkspaceIndexer(){
 }
 
 WorkspaceIndexer.prototype = {
+	
+	// Instance variables
+	//	int workspace_count			: Count of workspaces.
+	//	int workspace_index			: Index of current workspace.
+	//
+	//	int shandler_count_changed	: signal handler for notify::n-workspaces.
+	//	int shandler_switched		: signal handler for switch-workspace.
+	
 	_init: function(){
 	},
 	
