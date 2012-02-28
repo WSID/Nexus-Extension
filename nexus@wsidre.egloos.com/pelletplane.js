@@ -488,7 +488,7 @@ PelletPlane.prototype = {
 		pellets[ Direction.UP ]._step_y = -100
 		pellets[ Direction.DOWN ]._step_x = 0
 		pellets[ Direction.DOWN ]._step_y = 100
-	}
+	},
 		/** index_2_pos: int
 		 * index:	int:	index of place.
 		 * Return:	double:	position of index.
