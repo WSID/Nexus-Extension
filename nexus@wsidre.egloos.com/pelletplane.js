@@ -464,6 +464,31 @@ PelletPlane.prototype = {
 		}
 		return true;
 	},
+	
+	pellet_spawn_at: function( x, y ) {
+		let align_x, align_y;
+		[align_x, align_y] = pos_align( x, y );
+		
+		let pellets = this._pellet_pool.retrive_more( 4 );
+		
+		// Decorate and pose pellets
+		for( let i in pellets ){
+			let rand_col = random_int_range( 0, this._pellet_srcs.length );
+			pellets[i].set_source( this._pellet_srcs[ rand_col ] );
+			pellets[i].actor.rotation_angle_z = i * 90;
+			pellets[i].actor.x = align_x;
+			pellets[i].actor.y = align_y;
+		}
+		// Set speed of pellets
+		pellets[ Direction.LEFT ]._step_x = -100
+		pellets[ Direction.LEFT ]._step_y = 0
+		pellets[ Direction.RIGHT ]._step_x = 100
+		pellets[ Direction.RIGHT ]._step_y = 0
+		pellets[ Direction.UP ]._step_x = 0
+		pellets[ Direction.UP ]._step_y = -100
+		pellets[ Direction.DOWN ]._step_x = 0
+		pellets[ Direction.DOWN ]._step_y = 100
+	}
 		/** index_2_pos: int
 		 * index:	int:	index of place.
 		 * Return:	double:	position of index.
@@ -472,6 +497,11 @@ PelletPlane.prototype = {
 		return index * this.pellet_width;
 	},
 	
+	pos_align : function( x, y ) {
+		n_x = x - ( (x - this.offset_x + (this.pellet_width/2) ) % this.pellet_width );
+		n_y = y - ( (y - this.offset_x + (this.pellet_width/2) ) % this.pellet_width );
+		return [n_x, n_y];
+	}
 		/** is_out: bool
 		 * Returns:	bool:	Whether it is out of screen and getting more farther
 		 *					the screen.
