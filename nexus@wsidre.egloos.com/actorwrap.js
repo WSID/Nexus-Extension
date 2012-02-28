@@ -426,26 +426,9 @@ MaximizeDetector.prototype = {
 		 * mwin: Meta.Window	: window to add to.
 		 */
 	add_window: function( mwin ){
-		let list_to_add = null;
-		
-		// Phase 1 : Determine which list to add mwin.
-		if( mwin.is_fullscreen() ){
-			list_to_add = this.maximized_list;
-		}
-		else if( mwin.get_maximized() & Meta.MaximizeFlags.VERTICAL ){
-			if( mwin.get_maximized() & Meta.MaximizeFlags.HORIZONTAL ){
-				list_to_add = this.maximized_list;
-			}
-			//If mwin is lefttiled so x is 0
-			else if( mwin.get_outer_rect().x == 0 ){
-				list_to_add = this.lefttiled_list;
-			}
-			//Otherwise ( =righttiled )
-			else{
-				list_to_add = this.righttiled_list;
-			}
-		}
-		else return;
+		// Phase 1 : Determine list to add window.
+		let list_to_add = this._window_determine_list( mwin );
+		if( list_to_add == null ) return;
 		
 		
 		// Phase 2 : Adding mwin ( and remove )
@@ -491,8 +474,12 @@ MaximizeDetector.prototype = {
 	set_from_workspace: function( workspace ){
 		let wlist = workspace.list_windows();
 		this.clean_list();
-		for( var i = 0; i < wlist.length ; i++ )
-			this.add_window( wlist[i] );
+		for( let i in wlist ){
+			let list_to_add = this._window_determine_list( wlist[i] );
+			if( list_to_add == null ) continue;
+			
+			list_to_add.push( wlist[i] );
+		}
 		
 		this._check_and_emit_signal();
 	},
