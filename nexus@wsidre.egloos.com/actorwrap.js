@@ -400,30 +400,35 @@ MaximizeDetector.prototype = {
 		 * state.
 		 */
 	connect_signals_to: function( shellwm ){
-		if( '_shandlers' in this ) return;
+		this._shandler_minimize = Main.wm._shellwm.connect(
+			'minimize', Lang.bind( this, this._sh_minimize ) );
 		
-		this._shellwm = shellwm;
-		this._shandlers = new Array();
+		this._shandler_maximize = Main.wm._shellwm.connect(
+			'maximize', Lang.bind( this, this._sh_maximize ) );
 		
-		for( let i in this.CONNECT_LIST ){
-			let con = this.CONNECT_LIST[i].replace( '-', '_' );
-			this._shandlers.push(
-				shellwm.connect( this.CONNECT_LIST[i],
-								 Lang.bind( this, this[ '_sh_' + con ] ) ) );
-		}
+		this._shandler_unmaximize = Main.wm._shellwm.connect(
+			'unmaximize', Lang.bind( this, this._sh_unmaximize ) );
+		
+		this._shandler_map = Main.wm._shellwm.connect(
+			'map', Lang.bind( this, this._sh_map ) );
+		
+		this._shandler_destroy = Main.wm._shellwm.connect(
+			'destroy', Lang.bind( this, this._sh_destroy ) );
+		
+		this._shandler_switch_workspace = Main.wm._shellwm.connect(
+			'switch-workspace', Lang.bind( this, this._sh_switch_workspace ) );
 	},
 	
 		/* disconnect_signals: void
 		 * Disconnects handlers from signals.
 		 */
 	disconnect_signals: function( ){
-		if( '_shandlers' in this ){
-			for( let i in this._shandlers ){
-				this._shellwm.disconnect( this._shandlers[i] );
-			}
-		}
-		delete this._shellwm;
-		delete this._shandlers;
+		Main.wm._shellwm.disconnect( this._shandler_minimize );
+		Main.wm._shellwm.disconnect( this._shandler_maximize );
+		Main.wm._shellwm.disconnect( this._shandler_unmaximize );
+		Main.wm._shellwm.disconnect( this._shandler_map );
+		Main.wm._shellwm.disconnect( this._shandler_destroy );
+		Main.wm._shellwm.disconnect( this._shandler_switch_workspace );
 	},
 	
 		/* add_window: void
