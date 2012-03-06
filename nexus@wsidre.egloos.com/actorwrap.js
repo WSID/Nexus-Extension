@@ -15,6 +15,7 @@ const Lang = imports.lang;
 const Signals = imports.signals;
 const Main = imports.ui.main;
 const Tweener = imports.ui.tweener;
+const WindowManager = imports.ui.windowManager;
 
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
@@ -63,9 +64,9 @@ var plane_width;
 var plane_height;
 var plane_offset;
 
-var size_incremental_per_workspace = 100;
+var sliding_height;
 
-var slide_duration = 0.5;
+var sliding_duration;
 
 
 var shellwm = Main.wm._shellwm;
@@ -74,7 +75,14 @@ var shellwm = Main.wm._shellwm;
 
 	/* setup: void
 	 * Initialize actor wrapper */
-function setup( ){
+function setup( settings ){
+	sliding_height = settings.get_double('sliding-height');
+	let sliding_duration_msec = settings.get_int('sliding-duration');
+	
+	if( sliding_duration_msec <= 0 )
+		sliding_duration = WindowManager.WINDOW_ANIMATION_TIME;
+	else
+		sliding_duration = sliding_duration_msec / 1000.0;
 	
 	/* Initializes subplanes and actors */
 	subplanes = new Array();
@@ -182,6 +190,21 @@ function unsetup( ){
 
 /* **** Signal handlers *******************************************************/
 
+	/* _sh_settings_changed: void
+	 * When setting has changed, it will update actorwrap.
+	 *
+	 * settings: Gio.Settings:	settings.
+	 * key: string:				changed setting key.
+	 */
+function _sh_settings_changed( settings, key ){
+	switch( key ){
+	case 'sliding-height':
+		break;
+	case 'sliding-duration':
+		break;
+	}
+}
+
 	/* _sh_wrap_plane_lower: bool
 	 * When windows are restacked and wrap_plane goes on top of them, this
 	 * will move it below of them.
@@ -250,7 +273,7 @@ function _sh_screensize_changed( screen, pspec ){
 	 */
 function _sh_workspace_count_changed( windexer, count ){
 	sheight = global.stage.height +
-		( (count - 1) * size_incremental_per_workspace );
+		( (count - 1) * sliding_height );
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( plane_width, plane_height );
 }
@@ -262,10 +285,10 @@ function _sh_workspace_count_changed( windexer, count ){
 	 * to: int:				index of destination workspace.
 	 */
 function _sh_switch_workspace( shellwm, to ){
-	let anim_param = { time:		slide_duration,
+	let anim_param = { time:		sliding_duration,
 					   transition:	'easeOutQuad',
 					   onComplete:	_sh_switch_workspace_tween_completed,
-					   y: -(size_incremental_per_workspace * to) };
+					   y: -(sliding_height * to) };
 	
 	Tweener.addTween( wrap_plane, anim_param );
 	Tweener.addTween( wrap_plane_clone, anim_param );
@@ -286,9 +309,9 @@ function calculate_ssize(){
 	plane_width = global.stage.width;
 	plane_height = global.stage.height +
 		((global.screen.get_n_workspaces() - 1) *
-			size_incremental_per_workspace );
+			sliding_height );
 	plane_offset = global.screen.get_active_workspace_index() *
-		size_incremental_per_workspace;
+		sliding_height;
 	
 	wrap_plane.y =  -plane_offset;
 	wrap_plane_clone.y = -plane_offset;
