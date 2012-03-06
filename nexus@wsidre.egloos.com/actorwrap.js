@@ -87,6 +87,7 @@ function setup( ){
 	background_plane = global.background_actor;
 	overview_plane = Main.overview._background;
 	
+	/* Add plane actor in UI hierarchy */
 	background_plane.get_parent().add_actor(wrap_plane);
 	wrap_plane.raise( background_plane );
 	
@@ -95,7 +96,7 @@ function setup( ){
 	wrap_plane_clone.visible = false;
 	
 	/* Initializes detectors */
-	maximized_detector = new MaximizeDetector( Main.wm._shellwm );
+	maximized_detector = new MaximizeDetector();
 	workspace_indexer = new WorkspaceIndexer()
 	
 	in_overview = false;
@@ -134,6 +135,7 @@ function setup( ){
 	
 	shandler_screensize_change = global.stage.connect('notify::allocation', shand_screensize_changed );
 	
+	/* initialize maximized_detector */
 	maximized_detector.set_from_workspace(
 		global.screen.get_workspace_by_index(
 			global.screen.get_active_workspace_index() ) );
@@ -143,9 +145,11 @@ function setup( ){
 function unsetup( ){
 	if( is_setup ){
 		
+		
 		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
 		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
+		/* disconnect signals */
 		workspace_indexer.disconnect( shandler_workspace_count_change );
 		workspace_indexer.disconnect( shandler_switch_workspace );
 		workspace_indexer.disconnect_signals();
@@ -155,15 +159,17 @@ function unsetup( ){
 		maximized_detector.disconnect_signals();
 		
 		global.stage.disconnect( shandler_screensize_change );
-	
+		
 		Main.overview.disconnect( shandler_showing );
 		Main.overview.disconnect( shandler_hidden );
 		Main.wm._shellwm.disconnect( shandler_kill_switch_workspace );
 		global.screen.disconnect( shandler_restacked );
-
+		
+		/* remove UI hierarchy */
 		wrap_plane.get_parent().remove_actor( wrap_plane );
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
-
+		
+		/* remove all planes and actors */
 		for( let a = 0; a < wrap_plane.get_children().length; a++ ){
 			wrap_plane.remove_actor( wrap_plane.get_children()[a] );
 		}
