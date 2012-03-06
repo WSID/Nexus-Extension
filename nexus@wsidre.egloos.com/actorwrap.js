@@ -40,18 +40,18 @@ var maximized_detector;
 var workspace_indexer;
 
 // Signal Handlers to Main.wm, global.screen...
-var shandler_screensize_change;
-var shandler_kill_switch_workspace;
-var shandler_restacked;
-var shandler_showing;
-var shandler_hidden;
+var _shid_screensize_change;
+var _shid_kill_switch_workspace;
+var _shid_restacked;
+var _shid_showing;
+var _shid_hidden;
 
 // Signal Handlers to maximized_detector and workspace_indexer
-var shandler_maximized;
-var shandler_unmaximized;
+var _shid_maximized;
+var _shid_unmaximized;
 
-var shandler_workspace_count_change;
-var shandler_switch_workspace;
+var _shid_workspace_count_change;
+var _shid_switch_workspace;
 
 // Module state
 var paused;
@@ -106,7 +106,7 @@ function setup( ){
 	/* Connects signals */
 		/* When we pick or maximize window, wrap_plane goes over windows.
 		 * Therefore, we should take measure to put it under windows. */
-	shandler_restacked = global.screen.connect("restacked", shand_wrap_plane_lower );
+	_shid_restacked = global.screen.connect("restacked", _sh_wrap_plane_lower );
 		
 		/* Monkey Patching Main.wm._switchWorkspaceDone() to add some statement,
 		 * as wrap_plane tends to raise above windows after switching work-
@@ -115,25 +115,25 @@ function setup( ){
 	Main.wm._switchWorkspaceDone_orig__nexus = Main.wm._switchWorkspaceDone;
 	Main.wm._switchWorkspaceDone = function( shellwm ){
 		this._switchWorkspaceDone_orig__nexus( shellwm );
-		shand_wrap_plane_lower();
+		_sh_wrap_plane_lower();
 	}
 	
 	
 		/* Connect Signal handlers for wrap_plane_clone to show and
 		 * hide at right timing.
 		 */
-	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
-	shandler_hidden = Main.overview.connect("hidden", shand_overview_hidden );
+	_shid_showing = Main.overview.connect("showing", _sh_overview_showing );
+	_shid_hidden = Main.overview.connect("hidden", _sh_overview_hidden );
 	
 	maximized_detector.connect_signals();
-	shandler_maximized = maximized_detector.connect( 'maximized', shand_maximized );
-	shandler_unmaximized = maximized_detector.connect( 'unmaximized', shand_unmaximized );
+	_shid_maximized = maximized_detector.connect( 'maximized', _sh_maximized );
+	_shid_unmaximized = maximized_detector.connect( 'unmaximized', _sh_unmaximized );
 	
 	workspace_indexer.connect_signals();
-	shandler_workspace_count_change = workspace_indexer.connect('count-changed', shand_workspace_count_changed );
-	shandler_switch_workspace = workspace_indexer.connect('index-changed', shand_switch_workspace );
+	_shid_workspace_count_change = workspace_indexer.connect('count-changed', _sh_workspace_count_changed );
+	_shid_switch_workspace = workspace_indexer.connect('index-changed', _sh_switch_workspace );
 	
-	shandler_screensize_change = global.stage.connect('notify::allocation', shand_screensize_changed );
+	_shid_screensize_change = global.stage.connect('notify::allocation', _sh_screensize_changed );
 	
 	/* initialize maximized_detector */
 	maximized_detector.set_from_workspace(
@@ -150,20 +150,20 @@ function unsetup( ){
 		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
 		/* disconnect signals */
-		workspace_indexer.disconnect( shandler_workspace_count_change );
-		workspace_indexer.disconnect( shandler_switch_workspace );
+		workspace_indexer.disconnect( _shid_workspace_count_change );
+		workspace_indexer.disconnect( _shid_switch_workspace );
 		workspace_indexer.disconnect_signals();
 		
-		maximized_detector.disconnect( shandler_maximized );
-		maximized_detector.disconnect( shandler_unmaximized );
+		maximized_detector.disconnect( _shid_maximized );
+		maximized_detector.disconnect( _shid_unmaximized );
 		maximized_detector.disconnect_signals();
 		
-		global.stage.disconnect( shandler_screensize_change );
+		global.stage.disconnect( _shid_screensize_change );
 		
-		Main.overview.disconnect( shandler_showing );
-		Main.overview.disconnect( shandler_hidden );
-		Main.wm._shellwm.disconnect( shandler_kill_switch_workspace );
-		global.screen.disconnect( shandler_restacked );
+		Main.overview.disconnect( _shid_showing );
+		Main.overview.disconnect( _shid_hidden );
+		Main.wm._shellwm.disconnect( _shid_kill_switch_workspace );
+		global.screen.disconnect( _shid_restacked );
 		
 		/* remove UI hierarchy */
 		wrap_plane.get_parent().remove_actor( wrap_plane );
@@ -183,99 +183,99 @@ function unsetup( ){
 	}
 }
 
-	/* shand_wrap_plane_lower: bool
+	/* _sh_wrap_plane_lower: bool
 	 * When windows are restacked and wrap_plane goes on top of them, this
 	 * will move it below of them.
 	 */
-function shand_wrap_plane_lower(){
+function _sh_wrap_plane_lower(){
 	wrap_plane.raise( background_plane );
 	return false;
 }
 
-	/* shand_overview_showing: void
+	/* _sh_overview_showing: void
 	 * When overview screen is becoming visible, show wrap_plane_clone as if
 	 * it was part of overview screen.
 	 */
-function shand_overview_showing(){
+function _sh_overview_showing(){
 	in_overview = true;
 	wrap_plane_clone.visible = true;
 	paused_preserve = (paused == undefined) ? false : paused;
 	resume();
 }
 
-	/* shand_overview_hidden: void
-	 * Just like shand_overview_showing() - but it hides wrap_plane_clone and
+	/* _sh_overview_hidden: void
+	 * Just like _sh_overview_showing() - but it hides wrap_plane_clone and
 	 * it is activated when overview screen is gone.
 	 */
-function shand_overview_hidden(){
+function _sh_overview_hidden(){
 	in_overview = false;
 	wrap_plane_clone.visible = false;
 	if( paused_preserve ) pause();
 }
 
 
-	/* shand_maximized: void
+	/* _sh_maximized: void
 	 * When Maximized state detected.
 	 */
-function shand_maximized(){
+function _sh_maximized(){
 	if( in_overview ) paused_preserve = true;
 	else pause();
 }
-	/* shand_unmaximized: void
+	/* _sh_unmaximized: void
 	 * When Unmaximized state detected.
 	 */
-function shand_unmaximized(){
+function _sh_unmaximized(){
 	if( in_overview ) paused_preserve = false;
 	else resume();
 }
 
-	/* shand_screensize_changed: void
+	/* _sh_screensize_changed: void
 	 * When screen resolution is changed, it updates screen size it kepts.
 	 *
 	 * screen: Meta.Screen:			signal source.
 	 * pspec: GObject.ParamSpec:	property spec.
 	 */
-function shand_screensize_changed( screen, pspec ){
+function _sh_screensize_changed( screen, pspec ){
 
 	calculate_ssize();
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( swidth, sheight );
 }
 
-	/* shand_workspace_count_changed: void
+	/* _sh_workspace_count_changed: void
 	 * When workspaces are increased or decreased, it updates plane heights to
 	 * provide constant shifting amount when switching workspaces.
 	 *
 	 * windexer: WorkspaceIndexer:	signal source.
 	 * count: int:					workspace count.
 	 */
-function shand_workspace_count_changed( windexer, count ){
+function _sh_workspace_count_changed( windexer, count ){
 	sheight = global.stage.height +
 		( (count - 1) * size_incremental_per_workspace );
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( swidth, sheight );
 }
 
-	/* shand_switch_workspace: void
+	/* _sh_switch_workspace: void
 	 * When switching workspace, put sliding animation to planes.
 	 *
 	 * shellwm: Shell.WM:	signal source.
 	 * to: int:				index of destination workspace.
 	 */
-function shand_switch_workspace( shellwm, to ){
+function _sh_switch_workspace( shellwm, to ){
 	let anim_param = { time:		slide_duration,
 					   transition:	'easeOutQuad',
-					   onComplete:	shand_switch_workspace_tween_completed,
+					   onComplete:	_sh_switch_workspace_tween_completed,
 					   y: -(size_incremental_per_workspace * to) };
 	
 	Tweener.addTween( wrap_plane, anim_param );
 	Tweener.addTween( wrap_plane_clone, anim_param );
 }
 
-	/* shand_switch_workspace_tween_completed: void
+	/* _sh_switch_workspace_tween_completed: void
 	 * When animation during switching workspace done, removes tweens from it.
 	 */
-function shand_switch_workspace_tween_completed( ){
+function _sh_switch_workspace_tween_completed( ){
 	Tweener.removeTweens( this );
 }
 
@@ -397,22 +397,22 @@ MaximizeDetector.prototype = {
 		 * state.
 		 */
 	connect_signals: function(){
-		this._shandler_minimize = Main.wm._shellwm.connect(
+		this._shid_minimize = Main.wm._shellwm.connect(
 			'minimize', Lang.bind( this, this._sh_minimize ) );
 		
-		this._shandler_maximize = Main.wm._shellwm.connect(
+		this._shid_maximize = Main.wm._shellwm.connect(
 			'maximize', Lang.bind( this, this._sh_maximize ) );
 		
-		this._shandler_unmaximize = Main.wm._shellwm.connect(
+		this._shid_unmaximize = Main.wm._shellwm.connect(
 			'unmaximize', Lang.bind( this, this._sh_unmaximize ) );
 		
-		this._shandler_map = Main.wm._shellwm.connect(
+		this._shid_map = Main.wm._shellwm.connect(
 			'map', Lang.bind( this, this._sh_map ) );
 		
-		this._shandler_destroy = Main.wm._shellwm.connect(
+		this._shid_destroy = Main.wm._shellwm.connect(
 			'destroy', Lang.bind( this, this._sh_destroy ) );
 		
-		this._shandler_switch_workspace = Main.wm._shellwm.connect(
+		this._shid_switch_workspace = Main.wm._shellwm.connect(
 			'switch-workspace', Lang.bind( this, this._sh_switch_workspace ) );
 	},
 	
@@ -420,12 +420,12 @@ MaximizeDetector.prototype = {
 		 * Disconnects handlers from signals.
 		 */
 	disconnect_signals: function( ){
-		Main.wm._shellwm.disconnect( this._shandler_minimize );
-		Main.wm._shellwm.disconnect( this._shandler_maximize );
-		Main.wm._shellwm.disconnect( this._shandler_unmaximize );
-		Main.wm._shellwm.disconnect( this._shandler_map );
-		Main.wm._shellwm.disconnect( this._shandler_destroy );
-		Main.wm._shellwm.disconnect( this._shandler_switch_workspace );
+		Main.wm._shellwm.disconnect( this._shid_minimize );
+		Main.wm._shellwm.disconnect( this._shid_maximize );
+		Main.wm._shellwm.disconnect( this._shid_unmaximize );
+		Main.wm._shellwm.disconnect( this._shid_map );
+		Main.wm._shellwm.disconnect( this._shid_destroy );
+		Main.wm._shellwm.disconnect( this._shid_switch_workspace );
 	},
 	
 		/* add_window: void
@@ -624,8 +624,8 @@ WorkspaceIndexer.prototype = {
 	//	int workspace_count			: Count of workspaces.
 	//	int workspace_index			: Index of current workspace.
 	//
-	//	int shandler_count_changed	: signal handler for notify::n-workspaces.
-	//	int shandler_switched		: signal handler for switch-workspace.
+	//	int _shid_count_changed	: signal handler for notify::n-workspaces.
+	//	int _shid_switched		: signal handler for switch-workspace.
 	
 	_init: function(){
 	},
@@ -635,11 +635,11 @@ WorkspaceIndexer.prototype = {
 		 * state.
 		 */
 	connect_signals: function(){
-		this.shandler_count_changed = global.screen.connect(
+		this._shid_count_changed = global.screen.connect(
 			'notify::n-workspaces',
 			Lang.bind( this, this._sh_workspace_count_changed ) );
 		
-		this.shandler_switched = Main.wm._shellwm.connect(
+		this._shid_switched = Main.wm._shellwm.connect(
 			'switch-workspace',
 			Lang.bind( this, this._sh_workspace_switched ) );
 	},
@@ -648,10 +648,10 @@ WorkspaceIndexer.prototype = {
 		 * Disconnects handlers from signals.
 		 */
 	disconnect_signals: function(){
-		global.screen.disconnect( this.shandler_count_changed );
-		Main.wm._shellwm.disconnect( this.shandler_switched );
-		delete this.shandler_count_changed;
-		delete this.shandler_switched;
+		global.screen.disconnect( this._shid_count_changed );
+		Main.wm._shellwm.disconnect( this._shid_switched );
+		delete this._shid_count_changed;
+		delete this._shid_switched;
 	},
 	
 	/* **** Signal handlers ***************************************************/
