@@ -49,6 +49,19 @@ Changes on this requires restart to take effect.</description>
 			<summary>Offset of pellet plane</summary>
 			<description>Offset of pellet plane. When offset is (0, 0), leftmost pellet will stick to left border of screen and Topmost pellet, top border of screen.</description>
 		</key>
+		
+		<key type="d" name="sliding-height">
+			<default>140</default>
+			<range min="0" max="4096"/>
+			<summary>Sliding height while switching workspaces.</summary>
+			<description>Sliding height for moving to near workspace. If new workspace is created, the plane got expanded to spawn pellet in expanded area.</description>
+		</key>
+
+		<key type="i" name="sliding-duration">
+			<default>-1</default>
+			<summary>Sliding duration</summary>
+			<description>Time that sliding plane takes. (in millisecond) Any negative value will be replaced to Shell's switching animation time.</description>
+		</key>
 
 		<key name="testdrive" flags="DirectionFlags">
 			<default>['UP', 'LEFT', 'DOWN', 'RIGHT']</default>
