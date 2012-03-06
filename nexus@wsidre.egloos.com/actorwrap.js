@@ -83,6 +83,7 @@ function setup( ){
 	wrap_plane = new Clutter.Group();
 	wrap_plane_clone = new Clutter.Clone( {source:wrap_plane } );
 	
+	/* locate background and overview actor in UI hierarchy */
 	background_plane = global.background_actor;
 	overview_plane = Main.overview._background;
 	
@@ -176,7 +177,7 @@ function unsetup( ){
 	}
 }
 
-	/** shand_wrap_plane_lower: bool
+	/* shand_wrap_plane_lower: bool
 	 * When windows are restacked and wrap_plane goes on top of them, this
 	 * will move it below of them.
 	 */
@@ -185,7 +186,7 @@ function shand_wrap_plane_lower(){
 	return false;
 }
 
-	/** shand_overview_showing: void
+	/* shand_overview_showing: void
 	 * When overview screen is becoming visible, show wrap_plane_clone as if
 	 * it was part of overview screen.
 	 */
@@ -196,7 +197,7 @@ function shand_overview_showing(){
 	resume();
 }
 
-	/** shand_overview_hidden: void
+	/* shand_overview_hidden: void
 	 * Just like shand_overview_showing() - but it hides wrap_plane_clone and
 	 * it is activated when overview screen is gone.
 	 */
@@ -207,14 +208,14 @@ function shand_overview_hidden(){
 }
 
 
-	/** shand_maximized: void
+	/* shand_maximized: void
 	 * When Maximized state detected.
 	 */
 function shand_maximized(){
 	if( in_overview ) paused_preserve = true;
 	else pause();
 }
-	/** shand_unmaximized: void
+	/* shand_unmaximized: void
 	 * When Unmaximized state detected.
 	 */
 function shand_unmaximized(){
@@ -222,7 +223,7 @@ function shand_unmaximized(){
 	else resume();
 }
 
-	/** shand_screensize_changed: void
+	/* shand_screensize_changed: void
 	 * When screen resolution is changed, it updates screen size it kepts.
 	 *
 	 * screen: Meta.Screen:			signal source.
@@ -235,7 +236,7 @@ function shand_screensize_changed( screen, pspec ){
 		subplanes[i].set_size( swidth, sheight );
 }
 
-	/** shand_workspace_count_changed: void
+	/* shand_workspace_count_changed: void
 	 * When workspaces are increased or decreased, it updates plane heights to
 	 * provide constant shifting amount when switching workspaces.
 	 *
@@ -249,7 +250,7 @@ function shand_workspace_count_changed( windexer, count ){
 		subplanes[i].set_size( swidth, sheight );
 }
 
-	/** shand_switch_workspace: void
+	/* shand_switch_workspace: void
 	 * When switching workspace, put sliding animation to planes.
 	 *
 	 * shellwm: Shell.WM:	signal source.
@@ -265,14 +266,14 @@ function shand_switch_workspace( shellwm, to ){
 	Tweener.addTween( wrap_plane_clone, anim_param );
 }
 
-	/** shand_switch_workspace_tween_completed: void
+	/* shand_switch_workspace_tween_completed: void
 	 * When animation during switching workspace done, removes tweens from it.
 	 */
 function shand_switch_workspace_tween_completed( ){
 	Tweener.removeTweens( this );
 }
 
-	/** calculate_ssize: void
+	/* calculate_ssize: void
 	 * Updates screen size and offset according to global.stage size and current
 	 * index of workspace.
 	 */
@@ -289,7 +290,7 @@ function calculate_ssize(){
 }
 
 /* **** 2. Public functions to add or remove actor to wrap. *******************/
-	/** add_actor: void
+	/* add_actor: void
 	 * Adds actor to wrap.
 	 * Added actor will be resized according to screen size, count of workspaces.
 	 *
@@ -299,7 +300,7 @@ function add_actor( actor ){
 	wrap_plane.add_actor( actor );
 }
 
-	/** remove_actor: void
+	/* remove_actor: void
 	 * Removes actor being wrapped.
 	 *
 	 * actor: Clutter.Actor:	Actor to be removed.
@@ -308,7 +309,7 @@ function remove_actor( actor ){
 	wrap_plane.remove_actor( actor );
 }
 
-	/** add_plane: void
+	/* add_plane: void
 	 * Adds plane to wrap.
 	 *
 	 * plane: PelletPlane:	Plane to be managed.
@@ -319,7 +320,7 @@ function add_plane( plane ){
 	plane.set_size( swidth, sheight );
 }
 
-	/** remove_plane: void
+	/* remove_plane: void
 	 * Removes plane to wrap.
 	 *
 	 * plane: PelletPlane: Plane to be removed.
@@ -329,6 +330,9 @@ function remove_plane( plane ){
 	wrap_plane.remove_actor( plane.actor );
 }
 
+	/* pause: void
+	 * Pauses all animation of subplanes.
+	 */
 function pause(){
 	for( let i = 0; i < subplanes.length ; i++ ){
 		subplanes[i].pause();
@@ -336,6 +340,9 @@ function pause(){
 	paused = true;
 }
 
+	/* resume: void
+	 * Resumes all animation of subplanes.
+	 */
 function resume(){
 	for( let i = 0; i < subplanes.length ; i++ ){
 		subplanes[i].resume();
@@ -426,10 +433,10 @@ MaximizeDetector.prototype = {
 		 * mwin: Meta.Window	: window to add to.
 		 */
 	add_window: function( mwin ){
+		
 		// Phase 1 : Determine list to add window.
 		let list_to_add = this._window_determine_list( mwin );
 		if( list_to_add == null ) return;
-		
 		
 		// Phase 2 : Adding mwin ( and remove )
 		this._ensure_nonexist( mwin, this.maximized_list,
@@ -529,26 +536,32 @@ MaximizeDetector.prototype = {
 	
 	/* **** Signal handlers ***************************************************/
 	
+		// Connected to Main.wm._shellwm - minimize
 	_sh_minimize: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
 	
+		// Connected to Main.wm._shellwm - maximize
 	_sh_maximize: function( shellwm, actor ){
 		this.add_window( actor.meta_window );
 	},
 	
+		// Connected to Main.wm._shellwm - unmaximize
 	_sh_unmaximize: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
 	
+		// Connected to Main.wm._shellwm - map
 	_sh_map: function( shellwm, actor ){
 		this.add_window( actor.meta_window );
 	},
 	
+		// Connected to Main.wm._shellwm - destroy
 	_sh_destroy: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
 	
+		// Connected to Main.wm._shellwm - switch-workspace
 	_sh_switch_workspace: function( shellwm, from, to, direction ){
 		this.set_from_workspace( global.screen.get_workspace_by_index( to ) );
 	},
@@ -639,19 +652,23 @@ WorkspaceIndexer.prototype = {
 		delete this.shandler_switched;
 	},
 	
-	/* **** signal handlers ***************************************************/
+	/* **** Signal handlers ***************************************************/
 	
+		// Connected to global.screen - notify::n-workspaces.
 	_sh_workspace_count_changed: function( screen, pspec ){
 		this.emit_with_count_index(
 			global.screen.get_n_workspaces(),
 			global.screen.get_active_workspace_index() );
 	},
 	
+		// Connected to Main.wm._shellwm - switch-workspace.
 	_sh_workspace_switched: function( wm, from, to, direction ){
 		this.emit_with_count_index(
 			global.screen.get_n_workspaces(),
 			global.screen.get_active_workspace_index() );
 	},
+	
+	/* **** Private functions *************************************************/
 	
 		/* emit_with_count_index: void
 		 * Update and check current states and emit signals if necessary.
