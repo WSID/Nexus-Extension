@@ -369,20 +369,11 @@ function MaximizeDetector( workspace ){
 }
 
 MaximizeDetector.prototype = {
-	/* **** In Class Constants ************************************************/
-	
-		/* Names of signals which this object connects to. */
-	CONNECT_LIST: new Array('minimize', 'maximize', 'unmaximize', 'map',
-							'destroy', 'switch-workspace' ),
-	
 	// Instance variable list
 	//	bool maximized			: state of detector.
 	//	Array maximized_list	: list of maximized windows.
 	//	Array lefttiled_list	: list of left-tiled windows.
 	//	Array righttiled_list	: list of right-tiled windows.
-	//
-	//	Shell.WM _shellwm		: event source.
-	//	Array _shandlers		: list of signal handlers.
 	
 	_init: function( workspace ){
 		this.maximized_list = new Array();
