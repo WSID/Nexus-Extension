@@ -58,11 +58,11 @@ var paused;
 var paused_preserve;
 var in_overview;
 
-// __Screen size__ Plane size
+// Plane size
 // TODO: Change their name.
-var swidth;
-var sheight;
-var soffset;
+var plane_width;
+var plane_height;
+var plane_offset;
 
 var size_incremental_per_workspace = 100;
 
@@ -100,7 +100,6 @@ function setup( ){
 	workspace_indexer = new WorkspaceIndexer()
 	
 	in_overview = false;
-	
 	calculate_ssize();
 	
 	/* Connects signals */
@@ -110,7 +109,7 @@ function setup( ){
 		
 		/* Monkey Patching Main.wm._switchWorkspaceDone() to add some statement,
 		 * as wrap_plane tends to raise above windows after switching work-
-		 * spaces (and after restacking windows).
+		 * spaces.
 		 * Chaining up original function to fit any version of shell.	*/
 	Main.wm._switchWorkspaceDone_orig__nexus = Main.wm._switchWorkspaceDone;
 	Main.wm._switchWorkspaceDone = function( shellwm ){
@@ -145,7 +144,7 @@ function setup( ){
 function unsetup( ){
 	if( is_setup ){
 		
-		
+		/* revert monkey patched function */
 		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
 		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
@@ -182,6 +181,8 @@ function unsetup( ){
 		is_setup = false;
 	}
 }
+
+/* **** Signal handlers *******************************************************/
 
 	/* _sh_wrap_plane_lower: bool
 	 * When windows are restacked and wrap_plane goes on top of them, this
@@ -239,7 +240,7 @@ function _sh_screensize_changed( screen, pspec ){
 
 	calculate_ssize();
 	for( var i = 0; i < subplanes.length; i++ )
-		subplanes[i].set_size( swidth, sheight );
+		subplanes[i].set_size( plane_width, plane_height );
 }
 
 	/* _sh_workspace_count_changed: void
@@ -253,7 +254,7 @@ function _sh_workspace_count_changed( windexer, count ){
 	sheight = global.stage.height +
 		( (count - 1) * size_incremental_per_workspace );
 	for( var i = 0; i < subplanes.length; i++ )
-		subplanes[i].set_size( swidth, sheight );
+		subplanes[i].set_size( plane_width, plane_height );
 }
 
 	/* _sh_switch_workspace: void
@@ -284,15 +285,15 @@ function _sh_switch_workspace_tween_completed( ){
 	 * index of workspace.
 	 */
 function calculate_ssize(){
-	swidth = global.stage.width;
-	sheight = global.stage.height +
+	plane_width = global.stage.width;
+	plane_height = global.stage.height +
 		((global.screen.get_n_workspaces() - 1) *
 			size_incremental_per_workspace );
-	soffset = global.screen.get_active_workspace_index() *
+	plane_offset = global.screen.get_active_workspace_index() *
 		size_incremental_per_workspace;
 	
-	wrap_plane.y =  -soffset;
-	wrap_plane_clone.y = -soffset;
+	wrap_plane.y =  -plane_offset;
+	wrap_plane_clone.y = -plane_offset;
 }
 
 /* **** 2. Public functions to add or remove actor to wrap. *******************/
@@ -323,7 +324,7 @@ function remove_actor( actor ){
 function add_plane( plane ){
 	subplanes.push( plane );
 	wrap_plane.add_actor( plane.actor );
-	plane.set_size( swidth, sheight );
+	plane.set_size( plane_width, plane_height );
 }
 
 	/* remove_plane: void
