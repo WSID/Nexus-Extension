@@ -124,7 +124,7 @@ function setup( ){
 	shandler_showing = Main.overview.connect("showing", shand_overview_showing );
 	shandler_hidden = Main.overview.connect("hidden", shand_overview_hidden );
 	
-	maximized_detector.connect_signals_to( Main.wm._shellwm );
+	maximized_detector.connect_signals();
 	shandler_maximized = maximized_detector.connect( 'maximized', shand_maximized );
 	shandler_unmaximized = maximized_detector.connect( 'unmaximized', shand_unmaximized );
 	
@@ -399,7 +399,7 @@ MaximizeDetector.prototype = {
 		 * Connects handlers to necessary signals in order to detect maximized
 		 * state.
 		 */
-	connect_signals_to: function( shellwm ){
+	connect_signals: function(){
 		this._shandler_minimize = Main.wm._shellwm.connect(
 			'minimize', Lang.bind( this, this._sh_minimize ) );
 		
