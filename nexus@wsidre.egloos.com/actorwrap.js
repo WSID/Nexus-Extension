@@ -41,7 +41,6 @@ var workspace_indexer;
 
 // Signal Handlers to Main.wm, global.screen...
 var _shid_screensize_change;
-var _shid_kill_switch_workspace;
 var _shid_restacked;
 var _shid_showing;
 var _shid_hidden;
@@ -161,7 +160,6 @@ function unsetup( ){
 		
 		Main.overview.disconnect( _shid_showing );
 		Main.overview.disconnect( _shid_hidden );
-		Main.wm._shellwm.disconnect( _shid_kill_switch_workspace );
 		global.screen.disconnect( _shid_restacked );
 		
 		/* remove UI hierarchy */
