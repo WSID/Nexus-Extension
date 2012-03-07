@@ -38,7 +38,7 @@ function enable() {
 	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
 	pellet_plane = new PelletPlane.PelletPlane( settings );
 	
-	ActorWrap.setup();
+	ActorWrap.setup( settings );
 	ActorWrap.add_plane( pellet_plane );
 	
 	pellet_plane.start();
