@@ -11,6 +11,11 @@
  *	pellet_source = new PelletSource( ... ); //color, size infos...
  *	pellet = new Pellet();
  *	pellet.set_source( pellet_source );
+ *
+ * Section outline:
+ *	1. Definition and Utility Functions.
+ *	2. Pellet
+ *	3. PelletSource
  */
 
 // Include Statements.
