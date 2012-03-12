@@ -1,3 +1,17 @@
+/* pellet.js
+ * This module contains object prototype represents each energy-beam-shaped
+ * pellet.
+ * As we just uses few colors of pellets with same size, We have 2 object
+ * prototypes. One is real representation: PelletSource, and the other is clone:
+ * Pellet.
+ * Pellet contains movement functions and PelletSource contains color and size
+ * adjustment functions.
+ *
+ * In real, this is done. ( simplified... )
+ *	pellet_source = new PelletSource( ... ); //color, size infos...
+ *	pellet = new Pellet();
+ *	pellet.set_source( pellet_source );
+ */
 
 // Include Statements.
 const Mainloop = imports.mainloop;
@@ -7,6 +21,8 @@ const Gdk = imports.gi.Gdk;
 
 const St = imports.gi.St;
 const Lang = imports.lang;
+
+/* **** 1. Definition and Utility Functions. **********************************/
 
 	/** Direction:
 	 * Enum about direction.
@@ -24,8 +40,8 @@ const Direction = {
 	 * Used to determine which alpha to use, default alpha value or color's own
 	 * alpha value.
 	 *
-	 * color: string or	: Color representation which Gdk.RGBA.parse() understand.
-	 *		  object	: Color object.
+	 * color: string	: Color representation which Gdk.RGBA.parse() understand.
+	 *		  or object	: Color object.
 	 */
 function is_have_alpha_part( color ){
 	if( typeof(color) == 'string' ){
@@ -57,7 +73,7 @@ function make_cstruct( color ){
 	else return color;
 }
 
-/* **** 1. Pellet *********************************************************** */
+/* **** 2. Pellet *********************************************************** */
 
 	/** Pellet:
 	 * Representation of pellet
@@ -71,8 +87,8 @@ function Pellet( ) {
 
 Pellet.prototype = {
 	// Instance variables
-	//	double _step_x	: stepping length in x axis
-	//	double _step_y	: stepping length in y axis
+	//	_step_x: double	: stepping length in x axis
+	//	_step_y: double	: stepping length in y axis
 	
 	_init: function( ) {
 		this.actor = new Clutter.Clone({});
@@ -104,7 +120,7 @@ Pellet.prototype = {
 };
 
 
-/* **** 2. PelletSource. **************************************************** */
+/* **** 3. PelletSource. **************************************************** */
 
 	/** PelletSource:
 	 * visual source of pellet.
@@ -115,20 +131,20 @@ function PelletSource( width, trail_length, glow_radius, color, default_alpha ) 
 
 PelletSource.prototype = {
 	// Instance variables
-	//	double width			: Pellet source's width
-	//	double trail_length		: Pellet source's trail length
-	//	double glow_radius		: Pellet source's glowing radius
+	//	width: double			: Pellet source's width
+	//	trail_length: double	: Pellet source's trail length
+	//	glow_radius: double		: Pellet source's glowing radius
 	//
-	//	object cstruct			: Pellet source's color
-	//		double red			: red component
-	//		double green		: green component
-	//		double blue			: blue component
-	//		double alpha		: alpha component - if don't exist,
-	//							 default_alpha will be used instead
-	//	double default_alpha	: Alpha value when alpha component is missing.
-	//	bool use_defalut_alpha	: Is alpha is missing
+	//	cstruct: double			: Pellet source's color
+	//		red: double			: red component
+	//		green: double		: green component
+	//		blue: double		: blue component
+	//		alpha: double		: alpha component - if don't exist,
+	//								default_alpha will be used instead
+	//	default_alpha: double	: Alpha value when alpha component is missing.
+	//	use_defalut_alpha: bool	: Is alpha is missing
 	//
-	//	St.DrawingArea actor	: actor.
+	//	actor: St.DrawingArea	: actor.
 	
 	_init: function ( width, trail_length, glow_radius, color, default_alpha ){
 		this.default_alpha = default_alpha;
@@ -173,6 +189,13 @@ PelletSource.prototype = {
 		this.set_dimension( this.width, this.trail_length, glow_radius );
 	},
 	
+		/* set_dimension: void
+		 * set pellet source's size at once.
+		 *
+		 * width: double		: pellet source's width
+		 * trail_length: double	: pellet source's trail length.
+		 * glow_radius: double	: pellet source's glowing radius.
+		 */
 	set_dimension: function( width, trail_length, glow_radius ){
 		this.width = width;
 		this.trail_length = trail_length;
@@ -181,6 +204,11 @@ PelletSource.prototype = {
 		this.actor.set_anchor_point( Math.max(glow_radius, trail_length), glow_radius );
 	},
 	
+		/* set_color: void
+		 * set pellet source's color.
+		 *
+		 * color: object or string	: color representation.
+		 */
 	set_color: function( color ){
 		if( this.color == color ) return;
 		this.cstruct = make_cstruct( color );
@@ -191,6 +219,13 @@ PelletSource.prototype = {
 		this.queue_repaint();
 	},
 	
+		/* set_default_alpha: void
+		 * set default alpha of pellet source.
+		 * When transparency is not given by color, this value will be used
+		 * instead of it.
+		 *
+		 * alpha: double	: alpha value ( transparency )
+		 */
 	set_default_alpha: function( alpha ){
 		this.default_alpha = alpha;
 		if( this.use_default_alpha ){
@@ -199,6 +234,9 @@ PelletSource.prototype = {
 		}
 	},
 	
+		/* queue_repaint: void
+		 * invokes actor's queue_repaint() method, preparing size of parts.
+		 */
 	queue_repaint: function(){
 		this._center_x = Math.max(this.glow_radius, this.trail_length);
 		this._half_width = this.width / 2;
@@ -220,17 +258,11 @@ PelletSource.prototype = {
 		/** paint: void
 		 * Paints colorized energy pellet. It uses cairo rather than images.
 		 *
-		 * width		:float				: width of pellet
-		 * trail_length	:float				: length of trailing
-		 * glow_radius	:float				: radius of glowing
-		 * color		:object{
-		 *					red		:double	: Red value of energy
-		 *					green	:double	: Green value of energy
-		 *					blue	:double	: ...
-		 *					alpha	:double	: Alpha value of energy
-		 *				 }
-		 *				 or string			: String representation that read by
-		 *									  Gdk.RGBA.parse
+		 * width: float				: width of pellet
+		 * trail_length: float		: length of trailing
+		 * glow_radius: float		: radius of glowing
+		 * color: object or string	: String representation that read by
+		 *							  Gdk.RGBA.parse
 		 */
 	_paint: function ( actor ){
 		let context = actor.get_context();
