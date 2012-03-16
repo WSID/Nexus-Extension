@@ -85,9 +85,11 @@ PelletPlane.prototype = {
 		//Initialize _settings
 		this._settings = settings;
 		this._pellet_settings = settings.get_child( 'pellet' );
+		
 		this._sigid_settings =
 			this._settings.connect('changed',
 				this.sigh_plane_settings_changed.bind( this ) );
+		
 		this._sigid_pellet_settings =
 			this._pellet_settings.connect('changed',
 				this.sigh_pellet_settings_changed.bind( this ) );
@@ -102,20 +104,26 @@ PelletPlane.prototype = {
 		this._pellet_srcs = new Array(0);
 		
 		//Set pellet parameters from settings
-		this.set_pellet_speed.apply( this, settings.get_value( 'speed' ).deep_unpack() );
+		this.set_pellet_speed.apply( this,
+			settings.get_value('speed').deep_unpack() );
 		
-		this.set_pellet_dimension(	this._pellet_settings.get_double('width'),
-									this._pellet_settings.get_double('trail-length'),
-									this._pellet_settings.get_double('glow-radius') );
-		this.set_pellet_default_alpha(	this._pellet_settings.get_double('default-alpha') );
-		this.set_pellet_colors(	this._pellet_settings.get_strv('colors') );
-		this.set_pellet_directions(	this._settings.get_strv('pellet-directions') );
+		this.set_pellet_dimension(
+			this._pellet_settings.get_double('width'),
+			this._pellet_settings.get_double('trail-length'),
+			this._pellet_settings.get_double('glow-radius') );
+		this.set_pellet_default_alpha(
+			this._pellet_settings.get_double('default-alpha') );
+		this.set_pellet_colors( this._pellet_settings.get_strv('colors') );
+		this.set_pellet_directions(
+			this._settings.get_strv('pellet-directions') );
 		
 		//Set plane paramters from settings
-		this.set_offset.apply( this, settings.get_value( 'offset' ).deep_unpack() );
-		this.set_stepping_timeout(	this._settings.get_int('stepping-timeout') );
-		this.set_spawn_timeout(	this._settings.get_int('spawn-timeout') );
-		this.set_spawn_probability(	this._settings.get_double('spawn-probability') );
+		this.set_offset.apply( this,
+							   settings.get_value( 'offset' ).deep_unpack() );
+		this.set_stepping_timeout( this._settings.get_int('stepping-timeout') );
+		this.set_spawn_timeout( this._settings.get_int('spawn-timeout') );
+		this.set_spawn_probability(
+			this._settings.get_double('spawn-probability') );
 
 	},
 	
@@ -129,9 +137,11 @@ PelletPlane.prototype = {
 		
 			if( ! this._paused ){
 				this._srcid_spawning =
-					Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
+					Mainloop.timeout_add( this.spawn_timeout,
+										  Lang.bind(this, this.pellet_spawn) );
 				this._srcid_stepping =
-					Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
+					Mainloop.timeout_add( this.stepping_timeout,
+										  Lang.bind(this, this.do_step) );
 			}
 			this.actor.visible = true;
 			
@@ -160,9 +170,11 @@ PelletPlane.prototype = {
 	resume: function(){
 		if( this._paused ){
 			this._srcid_spawning =
-				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
+				Mainloop.timeout_add( this.spawn_timeout,
+									  Lang.bind(this, this.pellet_spawn) );
 			this._srcid_stepping =
-				Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
+				Mainloop.timeout_add( this.stepping_timeout,
+									  Lang.bind(this, this.do_step) );
 			this._paused = false;
 		}
 	},
@@ -207,7 +219,8 @@ PelletPlane.prototype = {
 		if( this._started ){
 			Mainloop.source_remove( this._srcid_stepping );
 			this._srcid_stepping =
-				Mainloop.timeout_add( this.stepping_timeout, Lang.bind(this, this.do_step) );
+				Mainloop.timeout_add( this.stepping_timeout,
+									  Lang.bind(this, this.do_step) );
 		}
 		this.config_step();
 	},
@@ -224,7 +237,8 @@ PelletPlane.prototype = {
 		if( this._started ){
 			Mainloop.source_remove( this._srcid_spawning );
 			this._srcid_spawning =
-				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
+				Mainloop.timeout_add( this.spawn_timeout,
+									  Lang.bind(this, this.pellet_spawn) );
 		}
 	},
 	
@@ -403,7 +417,9 @@ PelletPlane.prototype = {
 		this.pellet_trail_length = trail_length;
 		this.pellet_glow_radius = glow_radius;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
-			this._pellet_srcs[i].set_dimension( width, trail_length, glow_radius );
+			this._pellet_srcs[i].set_dimension( width,
+												trail_length,
+												glow_radius );
 		}
 		this.config_step();
 		this.config_pellet_center_x();
@@ -483,7 +499,8 @@ PelletPlane.prototype = {
 	sigh_plane_settings_changed: function( settings, key ){
 		switch( key ){
 		case 'offset':
-			this.set_offset.apply( this, settings.get_value( key ).deep_unpack() );
+			this.set_offset.apply( this,
+								   settings.get_value( key ).deep_unpack() );
 			break;
 		case 'stepping-timeout':
 			this.set_stepping_timeout( settings.get_int( key ) );
@@ -495,7 +512,8 @@ PelletPlane.prototype = {
 			this.set_spawn_probability( settings.get_double( key ) );
 			break;
 		case 'speed':
-			this.set_pellet_speed.apply( this, settings.get_value( key ).deep_unpack() );
+			this.set_pellet_speed.apply( this,
+				settings.get_value( key ).deep_unpack() );
 			break;
 		case 'pellet-directions':
 			this.set_pellet_directions( settings.get_strv( key ) );
@@ -563,11 +581,14 @@ PelletPlane.prototype = {
 		if( spawnee != null ){
 
 			if( Math.random() > this.spawn_probability ) return true;
-			let rand_pick = GLib.random_int_range( 0, this.pellet_directions.length );
-			let rand_dir = this.pellet_directions[ rand_pick ];
+			let rand_dir_pick =
+				GLib.random_int_range( 0, this.pellet_directions.length );
+			let rand_dir = this.pellet_directions[ rand_dir_pick ];
+			
 			let rand_col = GLib.random_int_range( 0, this._pellet_srcs.length );
 		
-			let rand_spd = GLib.random_double_range(this._pellet_step_min, this._pellet_step_max);
+			let rand_spd = GLib.random_double_range(this._pellet_step_min,
+													this._pellet_step_max);
 			let rand_pos;
 
 
@@ -578,28 +599,32 @@ PelletPlane.prototype = {
 			// Put on starting place.
 			switch( rand_dir ){
 			case Direction.LEFT:
-				rand_pos = this.index_2_pos( GLib.random_int_range(0, this.xindexe) );
+				rand_pos = this.index_2_pos(
+					GLib.random_int_range(0, this.xindexe) );
 				spawnee._step_x = -rand_spd;
 				spawnee._step_y = 0;
 				spawnee.actor.x = this.swidth + this.pellet_glow_radius;
 				spawnee.actor.y = rand_pos;
 				break;
 			case Direction.RIGHT:
-				rand_pos = this.index_2_pos( GLib.random_int_range(0, this.xindexe) );
+				rand_pos = this.index_2_pos(
+					GLib.random_int_range(0, this.xindexe) );
 				spawnee._step_x = rand_spd;
 				spawnee._step_y = 0;
 				spawnee.actor.x = -this.pellet_glow_radius;
 				spawnee.actor.y = rand_pos;
 				break;
 			case Direction.UP:
-				rand_pos = this.index_2_pos( GLib.random_int_range(0, this.yindexe) );
+				rand_pos = this.index_2_pos(
+					GLib.random_int_range(0, this.yindexe) );
 				spawnee._step_x = 0;
 				spawnee._step_y = -rand_spd;
 				spawnee.actor.x = rand_pos;
 				spawnee.actor.y = this.sheight + this.pellet_glow_radius;
 				break;
 			case Direction.DOWN:
-				rand_pos = this.index_2_pos( GLib.random_int_range(0, this.yindexe) );
+				rand_pos = this.index_2_pos(
+					GLib.random_int_range(0, this.yindexe) );
 				spawnee._step_x = 0;
 				spawnee._step_y = rand_spd;
 				spawnee.actor.x = rand_pos;
@@ -638,7 +663,7 @@ PelletPlane.prototype = {
 		
 		//TODO: remove_out this code
 		res = ( x <= -(this._pellet_center_x) ) || ( (this._sxend ) <= x ) ||
-			  ( y <= -(this._pellet_center_x) ) || ( (this._syend ) <= y);
+			  ( y <= -(this._pellet_center_x) ) || ( (this._syend ) <= y );
 		return res;
 	},
 	
@@ -661,7 +686,8 @@ PelletPlane.prototype = {
 			}
 		}
 		if( result.length == 0 ){
-			return [Direction.LEFT, Direction.DOWN, Direction.RIGHT, Direction.UP];
+			return [Direction.LEFT, Direction.DOWN,
+					Direction.RIGHT, Direction.UP];
 		}
 		return result;
 	}
