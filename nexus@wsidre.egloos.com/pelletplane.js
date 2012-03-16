@@ -1,3 +1,16 @@
+/* Pellet Plane
+ * Where pellets are moving around!
+ * For convenience, it manages pellet's color and dimensions.
+ *
+ * Section outlines.
+ * 1. Starting and Stopping plane
+ * 2. Setters for adjustable options
+ * 3. Internal value adjust and applying
+ * 4. Signal Handlers
+ * 5. Internal Operations
+ * 6. Internal Utility Functions
+ */
+
 // Include Statements.
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
@@ -14,6 +27,7 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
 const Direction = Pellet.Direction
 
+
 const PELLET_MIN_SPEED = 10;
 
 function PelletPlane( settings ){
@@ -22,47 +36,47 @@ function PelletPlane( settings ){
 
 PelletPlane.prototype = {
 	//Basic Information
-	//	swidth:							int				: screen width.
-	//	sheight:						int				: screen height.
-	//	actor:							Clutter.Group	: real actor of it.
+	//	swidth: int	:	 screen width.
+	//	sheight: int	: screen height.
+	//	actor: Clutter.Group	: real actor of it.
 	//Plane Parameters
-	//	pool_capacity:					int
-	//	offset_x:						double
-	//	offset_y:						double
-	//	stepping_timeout:					int ( millisecond )
-	//	spawn_timeout:					int ( millisecond )
-	//	spawn_probability:				double ( 0 ~ 1 )
+	//	pool_capacity: int
+	//	offset_x: double
+	//	offset_y: double
+	//	stepping_timeout: int ( millisecond )
+	//	spawn_timeout: int ( millisecond )
+	//	spawn_probability: double ( 0 ~ 1 )
 	//Pellet Parameters
-	//	pellet_speed_min:				double
-	//	pellet_speed_max:				double
-	//	pellet_colors:					Something means color[]
-	//	pellet_default_alpha			double
-	//	pellet_width:					double
-	//	pellet_trail_length:			double
-	//	pellet_glow_radius:				double
-	//	pellet_directions:				(int from Direction)[]
+	//	pellet_speed_min: double
+	//	pellet_speed_max: double
+	//	pellet_colors: Something means color[]
+	//	pellet_default_alpha: double
+	//	pellet_width: double
+	//	pellet_trail_length: double
+	//	pellet_glow_radius: double
+	//	pellet_directions: (int from Direction)[]
 	//Internal Processing variable
-	//	_pellet_pool:					Pool<Pellet>
-	//	_pellet_srcs:					PelletSource[]
-	//	_xindexe:						int
-	//	_yindexe:						int
-	//	_pellet_step_min:				double
-	//	_pellet_step_max:				double
-	//	_is_postponed_color_init:		bool
-	//	_settings:						Gio.Settings
-	//	_pellet_settings:				Gio.Settings
+	//	_pellet_pool: Pool
+	//	_pellet_srcs: PelletSource[]
+	//	_xindexe: int
+	//	_yindexe: int
+	//	_pellet_step_min: double
+	//	_pellet_step_max: double
+	//	_is_postponed_color_init: bool
+	//	_settings: Gio.Settings
+	//	_pellet_settings: Gio.Settings
 	//	_sxend:
 	//	_syend:
 	//State
-	//	_started:						bool
-	//	_paused:						bool
+	//	_started: bool
+	//	_paused: bool
 	//Signal Handlers' IDs
-	//	_sigid_screen_change_width:		uint
-	//	_sigid_screen_change_height:	uint
-	//	_srcid_spawning:				uint
-	//	_srcid_stepping:				uint
-	//	_sigid_settings:				uint
-	//	_sigid_pellet_settings:			uint
+	//	_sigid_screen_change_width: uint
+	//	_sigid_screen_change_height: uint
+	//	_srcid_spawning: uint
+	//	_srcid_stepping: uint
+	//	_sigid_settings: uint
+	//	_sigid_pellet_settings: uint
 	
 	_init: function( settings ){
 		//Initialize actors
@@ -104,6 +118,12 @@ PelletPlane.prototype = {
 		this.set_spawn_probability(	this._settings.get_double('spawn-probability') );
 
 	},
+	
+	/* **** 1. Starting and Stopping plane ************************************/
+		/* start: void
+		 * starts spawning and moving pellets.
+		 * This can be stopped by stop() function or paused by pause() function.
+		 */
 	start: function(){
 		if( !this._started ){
 		
@@ -121,6 +141,10 @@ PelletPlane.prototype = {
 			this._started = true;
 		}
 	},
+		/* stop: void
+		 * stops spawning and moving pellets.
+		 * For pausing this for moment, use pause() instead.
+		 */
 	stop: function(){
 		if( this._started ){
 			this.actor.visible = false;
@@ -130,6 +154,9 @@ PelletPlane.prototype = {
 			this._started = false;
 		}
 	},
+		/* resume: void
+		 * continues pellet-spawning and moving behavior paused by pause().
+		 */
 	resume: function(){
 		if( this._paused ){
 			this._srcid_spawning =
@@ -139,6 +166,9 @@ PelletPlane.prototype = {
 			this._paused = false;
 		}
 	},
+		/* pause: void
+		 * pauses pellet-spawning and moving behavior.
+		 */
 	pause: function(){
 		if( ! this._paused ){
 			Mainloop.source_remove( this._srcid_spawning );
@@ -146,6 +176,12 @@ PelletPlane.prototype = {
 			this._paused = true;
 		}
 	},
+	
+	/* **** 2. Setters for adjustable options *********************************/
+		/* set_offset: void
+		 * Translate and apply offset.
+		 */
+		 
 	set_offset: function( offset_x, offset_y ){
 		let half_width = this.pellet_width / 2;
 		this.offset_x = ( ( offset_x + half_width ) % this.pellet_width );
@@ -159,7 +195,12 @@ PelletPlane.prototype = {
 		this.actor.set_anchor_point( this.offset_x,
 									 this.offset_y );
 	},
-
+	
+		/* set_stepping_timeout: void
+		 * sets stepping interval. Pellet moves on each step.
+		 *
+		 * duration: int	: stepping interval in millisecond.
+		 */
 	set_stepping_timeout: function( duration ){
 		this.stepping_timeout = duration;
 		
@@ -171,6 +212,12 @@ PelletPlane.prototype = {
 		this.config_step();
 	},
 	
+		/* set_spawn_timeout: void
+		 * sets stawning timeout. Pellets are spawned on each spawning timeout,
+		 * with some probability.
+		 *
+		 * timeout: int	: spawning timeout in millisecond.
+		 */
 	set_spawn_timeout: function( timeout ){
 		this.spawn_timeout = timeout;
 		
@@ -180,10 +227,26 @@ PelletPlane.prototype = {
 				Mainloop.timeout_add( this.spawn_timeout, Lang.bind(this, this.pellet_spawn) );
 		}
 	},
+	
+		/* set_spawn_probability: void
+		 * sets spawning probability on each spawning timeout.
+		 * 0 means pellet never spawn, 1 means pellets always spawn on each
+		 * timeout.
+		 *
+		 * probability: double	: spawning probability.
+		 */
 	set_spawn_probability: function( probability ){
 		this.spawn_probability = probability;
 	},
 	
+		/* set_pellet_speed: void
+		 * sets pellet's speed range.
+		 * If speed_min is greater than speed_max, they will be swapped.
+		 * If speed is less than PELLET_MIN_SPEED, they will be re-adjusted.
+		 *
+		 * speed_min: double	: minimum speed of pellet.
+		 * speed_max: double	: maximum speed of pellet.
+		 */
 	set_pellet_speed: function( speed_min, speed_max ){
 		if( speed_min > speed_max ){
 			var temp = speed_max;
@@ -203,16 +266,32 @@ PelletPlane.prototype = {
 		this.config_step();
 	},
 	
+		/* set_pellet_speed_min: void
+		 * sets minimum speed of pellets.
+		 *
+		 * speed: double	: minimum speed of pellet.
+		 */
 	set_pellet_speed_min: function( speed ){
 		this.pellet_speed_min = speed;
 		this.config_step();
 	},
 	
+		/* set_pellet_speed_max: void
+		 * sets maximum speed of pellets.
+		 *
+		 * speed: double	: maximum speed of pellet.
+		 */
 	set_pellet_speed_max: function( speed ){
 		this.pellet_speed_max = speed;
 		this.config_step();
 	},
 	
+		/* set_pellet_colors: void
+		 * sets color set to be used.
+		 *
+		 * colors: Array	: array of color representations. ( either string or
+		 *					  color object )
+		*/
 	set_pellet_colors: function( colors ){
 		let i;
 		
@@ -249,6 +328,12 @@ PelletPlane.prototype = {
 		this._is_postponed_color_init = false;
 	},
 	
+		/* set_pellet_default_alpha: void
+		 * sets default transparency to be used when alpha was not given from
+		 * color.
+		 *
+		 * alpha: double	: default alpha value.
+		 */
 	set_pellet_default_alpha: function( alpha ){
 		this.pellet_default_alpha = alpha;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
@@ -256,10 +341,21 @@ PelletPlane.prototype = {
 		}
 	},
 	
+		/* set_pellet_directions: void
+		 * sets set of pellet moving directions.
+		 *
+		 * directions: Array	: array of direction representations. ( either
+		 *						   string or int )
+		 */
 	set_pellet_directions: function( directions ){
 		this.pellet_directions = this.direction_map( directions );
 	},
 	
+		/* set_pellet_width: void
+		 * sets pellet width.
+		 *
+		 * width: double	: pellet width.
+		 */
 	set_pellet_width: function( width ){
 		this.pellet_width = width;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
@@ -269,6 +365,11 @@ PelletPlane.prototype = {
 		this.config_pellet_position();
 	},
 	
+		/* set_pellet_trail_length: void
+		 * sets pellet trailing length.
+		 *
+		 * trail_length: double	: trailing length.
+		 */
 	set_pellet_trail_length: function( trail_length ){
 		this.pellet_trail_length = trail_length;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
@@ -277,6 +378,11 @@ PelletPlane.prototype = {
 		this.config_pellet_center_x();
 	},
 	
+		/* set_pellet_glow_radius: void
+		 * set pellet glowing radius.
+		 *
+		 * glow_radius: double	: glowing radius.
+		 */
 	set_pellet_glow_radius: function( glow_radius ){
 		this.pellet_glow_radius = glow_radius;
 		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
@@ -285,6 +391,13 @@ PelletPlane.prototype = {
 		this.config_pellet_center_x();
 	},
 	
+		/* set_pellet_dimension: void
+		 * sets pellet's width, trailing length, glowing radius at once.
+		 *
+		 * width: double		: pellet width.
+		 * trail_length: double	: pellet trailing length.
+		 * glow_radius: double	: pellet glowing radius.
+		 */
 	set_pellet_dimension: function( width, trail_length, glow_radius ){
 		this.pellet_width = width;
 		this.pellet_trail_length = trail_length;
@@ -296,6 +409,12 @@ PelletPlane.prototype = {
 		this.config_pellet_center_x();
 	},
 	
+		/* set_size: void
+		 * sets pellet plane's size. Used by Actorwrap.
+		 *
+		 * swidth: int	: width of plane's size
+		 * sheight:	int	: height of plane's size
+		 */
 	set_size: function( swidth, sheight ){
 		this.swidth = swidth;
 		this.sheight = sheight;
@@ -304,6 +423,10 @@ PelletPlane.prototype = {
 		this.config_screen_end();
 	},
 	
+	/* **** 3. Internal value adjust and applying *****************************/
+		/* config_pellet_position: void
+		 * Applying new size on position setting part.
+		 */
 	config_pellet_position: function(){
 		if( this.swidth != undefined &&
 			this.sheight != undefined &&
@@ -314,6 +437,10 @@ PelletPlane.prototype = {
 		}
 	},
 	
+		/* config_screen_end: void
+		 * Applying new size on pellet recycling part. ( pellets are recycled at
+		 * the end of plane. )
+		 */
 	config_screen_end: function( ){
 		if( this.swidth != undefined &&
 			this.sheight != undefined &&
@@ -324,6 +451,9 @@ PelletPlane.prototype = {
 		}
 	},
 	
+		/* config_step: void
+		 * Applying new speed on step parameters.
+		 */
 	config_step: function( ){
 		if( (this.pellet_speed_min != undefined ) &&
 			(this.pellet_speed_max != undefined ) &&
@@ -336,6 +466,9 @@ PelletPlane.prototype = {
 		}
 	},
 	
+		/* config_pellet_center_x: void
+		 * Updates pellet center.
+		 */
 	config_pellet_center_x: function( ){
 		if( (this.pellet_trail_length != undefined ) &&
 			(this.pellet_glow_radius != undefined ) ){
@@ -346,6 +479,7 @@ PelletPlane.prototype = {
 		}
 	},
 	
+	/* **** 4. Signal Handlers ************************************************/
 	sigh_plane_settings_changed: function( settings, key ){
 		switch( key ){
 		case 'offset':
@@ -392,11 +526,25 @@ PelletPlane.prototype = {
 		this._settings.sync();
 	},
 	
+	/* **** 5. Internal Operations ********************************************/
+		/* set_pellet_step: void
+		 * sets pellet stepping size. Pellets move a step every stepping
+		 * timeout.
+		 * If you need to adjust pellet speed, use set_pellet_speed() instead of
+		 * this, as step is automatic adjusted by speed and stepping timeout.
+		 *
+		 * _min: double	: minimum step size.
+		 * _max: double	: maximum step size.
+		 */
 	set_pellet_step: function( _min, _max ){
 		this._pellet_step_min = _min;
 		this._pellet_step_max = _max;
 	},
 	
+		/* do_step: void
+		 * moves pellets a step.
+		 * This function is callback function for timeout source.
+		 */
 	do_step: function(){
 		this._pellet_pool.foreach( function( obj ){
 			obj.move_step( );
@@ -405,8 +553,9 @@ PelletPlane.prototype = {
 		return true;
 	},
 		/** pellet_spawn: void
-		 * Spawn a pellet at edge of screen from pool. If no pellet is idle, It doesn't
-		 * spawn any pellet.
+		 * Spawn a pellet at edge of screen from pool. If no pellet is idle, It
+		 * doesn't spawn any pellet.
+		 * This function is callback function for timeout source.
 		 */
 	pellet_spawn: function( ){
 		var spawnee = this._pellet_pool.retrive( );
@@ -465,46 +614,21 @@ PelletPlane.prototype = {
 		return true;
 	},
 	
-	pellet_spawn_at: function( x, y ) {
-		let align_x, align_y;
-		[align_x, align_y] = pos_align( x, y );
-		
-		let pellets = this._pellet_pool.retrive_more( 4 );
-		
-		// Decorate and pose pellets
-		for( let i in pellets ){
-			let rand_col = random_int_range( 0, this._pellet_srcs.length );
-			pellets[i].set_source( this._pellet_srcs[ rand_col ] );
-			pellets[i].actor.rotation_angle_z = i * 90;
-			pellets[i].actor.x = align_x;
-			pellets[i].actor.y = align_y;
-		}
-		// Set speed of pellets
-		pellets[ Direction.LEFT ]._step_x = -100
-		pellets[ Direction.LEFT ]._step_y = 0
-		pellets[ Direction.RIGHT ]._step_x = 100
-		pellets[ Direction.RIGHT ]._step_y = 0
-		pellets[ Direction.UP ]._step_x = 0
-		pellets[ Direction.UP ]._step_y = -100
-		pellets[ Direction.DOWN ]._step_x = 0
-		pellets[ Direction.DOWN ]._step_y = 100
-	},
-		/** index_2_pos: int
-		 * index:	int:	index of place.
-		 * Return:	double:	position of index.
+	/* **** 6. Internal Utility Functions *************************************/
+		/* index_2_pos: int
+		 * convert indexed position to pixel-based position.
+		 *
+		 * index: int		: index of place.
+		 * Return: double	: position of index.
 		 */
 	index_2_pos : function( index ) {
 		return index * this.pellet_width;
 	},
 	
-	pos_align : function( x, y ) {
-		n_x = x - ( (x - this.offset_x + (this.pellet_width/2) ) % this.pellet_width );
-		n_y = y - ( (y - this.offset_x + (this.pellet_width/2) ) % this.pellet_width );
-		return [n_x, n_y];
-	}
-		/** is_out: bool
-		 * Returns:	bool:	Whether it is out of screen and getting more farther
-		 *					the screen.
+		/* is_out: bool
+		 * checks whether pellet is out of plane.
+		 * Returns: bool	: Whether it is out of screen and getting more farther
+		 *					  the plane.
 		 */
 	is_out: function( child ) {
 		let x = child.actor.x;
@@ -518,6 +642,13 @@ PelletPlane.prototype = {
 		return res;
 	},
 	
+		/* direction_map: Array
+		 * constructs Array for direction from setting value to use in callback
+		 * functions.
+		 *
+		 * directions: Array	: Array of int or string representations.
+		 * Returns: Array		: Array of int value.
+		 */
 	direction_map: function( directions ){
 		let result = new Array();
 
