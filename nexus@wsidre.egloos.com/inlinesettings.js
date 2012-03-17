@@ -63,7 +63,7 @@ function InlineSettings( format, dict ){
 InlineSettings.prototype = {
 	_init: function( format, dict ){
 		this.format = format;
-		this.dict = object;
+		this.dict = dict;
 		this.variant_dict = new Object();
 		
 		for( key in format ){
@@ -73,7 +73,7 @@ InlineSettings.prototype = {
 	},
 	
 		/* get_int: int
-		 * 
+		 */
 	get_int: function( key ){
 		var value = this.dict[key];
 		var type = typeof( value );

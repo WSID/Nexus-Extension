@@ -325,7 +325,7 @@ PelletPlane.prototype = {
 		
 			//If count of the color is increased,
 			// add new pellet sources to have same count of it.
-		for( let i = this._pellet_srcs ; i < colors.length; i++ ){
+		for( let i = this._pellet_srcs.length ; i < colors.length; i++ ){
 			let pellet_src =
 				new Pellet.PelletSource(this.pellet_width,
 										this.pellet_trail_length,

@@ -42,7 +42,7 @@ function init(metadata) {
 	 * Starts the extension to work.
 	 */
 function enable() {
-	if( SETTING_SCHEMA in Gio.Settigns.list_schemas() )
+	if( SETTING_SCHEMA in Gio.Settings.list_schemas() )
 		settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
 	else
 		settings = InlineSettings.PLANE_SETTINGS;

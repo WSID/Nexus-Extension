@@ -107,7 +107,7 @@ function setup( settings ){
 	workspace_indexer = new WorkspaceIndexer()
 	
 	in_overview = false;
-	calculate_ssize();
+	configure_plane_size();
 	
 	/* Connects signals */
 		/* When we pick or maximize window, wrap_plane goes over windows.
@@ -258,10 +258,7 @@ function _sh_unmaximized(){
 	 * pspec: GObject.ParamSpec:	property spec.
 	 */
 function _sh_screensize_changed( screen, pspec ){
-
-	calculate_ssize();
-	for( var i = 0; i < subplanes.length; i++ )
-		subplanes[i].set_size( plane_width, plane_height );
+	configure_plane_size();
 }
 
 	/* _sh_workspace_count_changed: void
@@ -272,7 +269,7 @@ function _sh_screensize_changed( screen, pspec ){
 	 * count: int:					workspace count.
 	 */
 function _sh_workspace_count_changed( windexer, count ){
-	sheight = global.stage.height +
+	plane_height = global.stage.height +
 		( (count - 1) * sliding_height );
 	for( var i = 0; i < subplanes.length; i++ )
 		subplanes[i].set_size( plane_width, plane_height );
@@ -305,16 +302,41 @@ function _sh_switch_workspace_tween_completed( ){
 	 * Updates screen size and offset according to global.stage size and current
 	 * index of workspace.
 	 */
-function calculate_ssize(){
+function configure_plane_size(){
 	plane_width = global.stage.width;
-	plane_height = global.stage.height +
-		((global.screen.get_n_workspaces() - 1) *
-			sliding_height );
-	plane_offset = global.screen.get_active_workspace_index() *
-		sliding_height;
+	configure_plane_height();
+	configure_plane_offset();
+}
+
+function configure_plane_height(){
+	plane_height =	((workspace_indexer.workspace_count - 1)	*
+					 sliding_height )							+
+					global.stage.height;
+	for( var i = 0; i < subplanes.length; i++ )
+		subplanes[i].set_size( plane_width, plane_height );
+}
+
+function configure_plane_offset(){
+	plane_offset = 	workspace_indexer.workspace_index * sliding_height;
 	
-	wrap_plane.y =  -plane_offset;
-	wrap_plane_clone.y = -plane_offset;
+	if( wrap_plane != null ){
+		let anim_param = { time:		sliding_duration,
+						   transition:	'easeOutQuad',
+						   onComplete:	_sh_switch_workspace_tween_completed,
+						   y: -(plane_offset) };
+	
+		Tweener.addTween( wrap_plane, anim_param );
+		Tweener.addTween( wrap_plane_clone, anim_param );
+	}
+}
+
+function set_sliding_height( height ){
+	sliding_height = height;
+	configure_plane_offset();
+	configure_plane_height();
+}
+function set_sliding_duration( duration ){
+	sliding_duration = duration;
 }
 
 /* **** 2. Public functions to add or remove actor to wrap. *******************/

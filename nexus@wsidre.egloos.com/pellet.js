@@ -53,8 +53,11 @@ function is_have_alpha_part( color ){
 		return 	(color.charAt(0) != '#') && //#rrggbb has no alpha param
 				(color.charAt(3) == 'a') ;  //rgba() has alpha param
 	}
-	else{
+	else if( typeof(color == 'object') ){
 		return 'alpha' in color;
+	}
+	else{
+		return false;
 	}
 }
 
