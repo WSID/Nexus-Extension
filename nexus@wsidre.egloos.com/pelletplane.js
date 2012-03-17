@@ -27,7 +27,7 @@ const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
 const Direction = Pellet.Direction
 
-
+//Constant
 const PELLET_MIN_SPEED = 10;
 
 function PelletPlane( settings ){
@@ -101,7 +101,7 @@ PelletPlane.prototype = {
 			obj.actor.visible = false;
 			this.actor.add_actor( obj.actor );
 		} ) );
-		this._pellet_srcs = new Array(0);
+		this._pellet_srcs = new Array();
 		
 		//Set pellet parameters from settings
 		this.set_pellet_speed.apply( this,
@@ -307,8 +307,7 @@ PelletPlane.prototype = {
 		 *					  color object )
 		*/
 	set_pellet_colors: function( colors ){
-		let i;
-		
+	
 		this.pellet_colors = colors;
 		if( this.actor.get_parent() == null ){
 			this._is_postponed_color_init = true;
@@ -316,16 +315,17 @@ PelletPlane.prototype = {
 		}
 			//If count of the color is decreased,
 			// drop some of pellet sources to have same count of it.
-		while( colors.length < this._pellet_srcs ){
-			this._pellet_srcs.pop();
-		}
+		if( colors.length < this._pellet_srcs.length )
+			this._pellet_srcs.splice( colors.length,
+									  this._pellet_srcs.length - colors.length);
+
 			//Setting color of pellet sources.
-		for( i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_color( colors[i] );
-		}
+		
 			//If count of the color is increased,
 			// add new pellet sources to have same count of it.
-		for(; i < colors.length; i++ ){
+		for( let i = this._pellet_srcs ; i < colors.length; i++ ){
 			let pellet_src =
 				new Pellet.PelletSource(this.pellet_width,
 										this.pellet_trail_length,
@@ -350,9 +350,8 @@ PelletPlane.prototype = {
 		 */
 	set_pellet_default_alpha: function( alpha ){
 		this.pellet_default_alpha = alpha;
-		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_default_alpha( alpha );
-		}
 	},
 	
 		/* set_pellet_directions: void
@@ -372,9 +371,8 @@ PelletPlane.prototype = {
 		 */
 	set_pellet_width: function( width ){
 		this.pellet_width = width;
-		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_width( width );
-		}
 		this.config_step();
 		this.config_pellet_position();
 	},
@@ -386,9 +384,8 @@ PelletPlane.prototype = {
 		 */
 	set_pellet_trail_length: function( trail_length ){
 		this.pellet_trail_length = trail_length;
-		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_trail_length( trail_length );
-		}
 		this.config_pellet_center_x();
 	},
 	
@@ -399,9 +396,8 @@ PelletPlane.prototype = {
 		 */
 	set_pellet_glow_radius: function( glow_radius ){
 		this.pellet_glow_radius = glow_radius;
-		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_glow_radius( glow_radius );
-		}
 		this.config_pellet_center_x();
 	},
 	
@@ -416,11 +412,10 @@ PelletPlane.prototype = {
 		this.pellet_width = width;
 		this.pellet_trail_length = trail_length;
 		this.pellet_glow_radius = glow_radius;
-		for( let i = 0; i < this._pellet_srcs.length ; i++ ){
+		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_dimension( width,
 												trail_length,
 												glow_radius );
-		}
 		this.config_step();
 		this.config_pellet_center_x();
 	},
@@ -677,7 +672,7 @@ PelletPlane.prototype = {
 	direction_map: function( directions ){
 		let result = new Array();
 
-		for( let i = 0; i < directions.length ; i++ ){
+		for( let i in directions ){
 			let dirstr =  directions[i].toUpperCase();
 			if( dirstr in Direction ){
 				let dirnum = Direction[ dirstr ];
