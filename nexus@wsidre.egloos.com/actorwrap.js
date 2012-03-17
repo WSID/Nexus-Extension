@@ -199,8 +199,10 @@ function unsetup( ){
 function _sh_settings_changed( settings, key ){
 	switch( key ){
 	case 'sliding-height':
+		set_sliding_height( settings.get_double( key ) );
 		break;
 	case 'sliding-duration':
+		set_sliding_duration( settings.get_int( key ) );
 		break;
 	}
 }
@@ -298,6 +300,15 @@ function _sh_switch_workspace_tween_completed( ){
 	Tweener.removeTweens( this );
 }
 
+function set_sliding_height( height ){
+	sliding_height = height;
+	configure_plane_offset();
+	configure_plane_height();
+}
+function set_sliding_duration( duration ){
+	sliding_duration = duration;
+}
+
 	/* calculate_ssize: void
 	 * Updates screen size and offset according to global.stage size and current
 	 * index of workspace.
@@ -328,15 +339,6 @@ function configure_plane_offset(){
 		Tweener.addTween( wrap_plane, anim_param );
 		Tweener.addTween( wrap_plane_clone, anim_param );
 	}
-}
-
-function set_sliding_height( height ){
-	sliding_height = height;
-	configure_plane_offset();
-	configure_plane_height();
-}
-function set_sliding_duration( duration ){
-	sliding_duration = duration;
 }
 
 /* **** 2. Public functions to add or remove actor to wrap. *******************/
