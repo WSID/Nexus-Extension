@@ -18,6 +18,10 @@ const Main = imports.ui.main;
 const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 	const PelletPlane = Ext.pelletplane;
 	const ActorWrap = Ext.actorwrap;
+	const InlineSettings = Ext.inlinesettings;
+
+//Constants
+const SETTING_SCHEMA = 'org.gnome.shell.extensions.nexus';
 
 //Settings
 var settings;
@@ -38,8 +42,11 @@ function init(metadata) {
 	 * Starts the extension to work.
 	 */
 function enable() {
-	/* Getting parameters from metadata */
-	settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
+	if( SETTING_SCHEMA in Gio.Settigns.list_schemas() )
+		settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
+	else
+		settings = InlineSettings.PLANE_SETTINGS;
+	
 	pellet_plane = new PelletPlane.PelletPlane( settings );
 	
 	ActorWrap.setup( settings );
