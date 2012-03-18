@@ -7,8 +7,11 @@
  * 	const ActorWrap = imports.ui.extensionSystem['yourextension@yoursite.com'].actorwrap;
  *
  * section index :
- *	1. Core functions
- *	2. Public functions to add or remove actor to wrap.
+ * 1. setup, unsetup functions.
+ * 2. Public functions to add or remove actor to wrap.
+ * 3. Setter Functions.
+ * 4. Signal Handlers.
+ * 5. Classes.
  */
 
 const Lang = imports.lang;
@@ -54,6 +57,9 @@ var _shid_unmaximized;
 var _shid_workspace_count_change;
 var _shid_switch_workspace;
 
+// Signal Handlers to settings.
+var _shid_settings_changed;
+
 // Module state
 var paused;
 var paused_preserve;
@@ -68,7 +74,7 @@ var plane_offset;
 var sliding_height;
 var sliding_duration;
 
-/* **** 1. Core functions. ****************************************************/
+/* **** 1. setup, unsetup functions. ******************************************/
 
 	/* setup: void
 	 * Initialize actor wrapper */
@@ -125,6 +131,8 @@ function setup( settings ){
 	
 	_shid_screensize_change = global.stage.connect('notify::allocation', _sh_screensize_changed );
 	
+	_shid_settings_changed = settings.connect('changed', _sh_settings_changed );
+	
 	// ready maximized_detector for current workspace.
 	maximized_detector.set_from_workspace(
 		global.screen.get_workspace_by_index(
@@ -147,6 +155,8 @@ function unsetup( ){
 		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
 		// disconnect signals.
+		settings.disconnect( _shid_settings_changed );
+		
 		global.stage.disconnect( _shid_screensize_change );
 		
 		workspace_indexer.disconnect( _shid_workspace_count_change );
@@ -166,9 +176,8 @@ function unsetup( ){
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
 		
 		// remove all planes and actors.
-		for( let a = 0; a < wrap_plane.get_children().length; a++ ){
+		for( let a in wrap_plane.get_children() )
 			wrap_plane.remove_actor( wrap_plane.get_children()[a] );
-		}
 		wrap_plane = null;
 		wrap_plane_clone = null;
 
@@ -179,7 +188,121 @@ function unsetup( ){
 	}
 }
 
-/* **** Signal handlers *******************************************************/
+/* **** 2. Public functions to add or remove actor to wrap. *******************/
+	/* add_actor: void
+	 * Adds actor to wrap.
+	 * Added actor will be resized according to screen size, count of workspaces.
+	 *
+	 * actor: Clutter.Actor:	Actor to be managed.
+	 */
+function add_actor( actor ){
+	wrap_plane.add_actor( actor );
+}
+
+	/* remove_actor: void
+	 * Removes actor being wrapped.
+	 *
+	 * actor: Clutter.Actor:	Actor to be removed.
+	 */
+function remove_actor( actor ){
+	wrap_plane.remove_actor( actor );
+}
+
+	/* add_plane: void
+	 * Adds plane to wrap.
+	 *
+	 * plane: PelletPlane:	Plane to be managed.
+	 */
+function add_plane( plane ){
+	subplanes.push( plane );
+	wrap_plane.add_actor( plane.actor );
+	plane.set_size( plane_width, plane_height );
+}
+
+	/* remove_plane: void
+	 * Removes plane to wrap.
+	 *
+	 * plane: PelletPlane: Plane to be removed.
+	 */
+function remove_plane( plane ){
+	subplanes.pop( plane );
+	wrap_plane.remove_actor( plane.actor );
+}
+
+	/* pause: void
+	 * Pauses all animation of subplanes.
+	 */
+function pause(){
+	for( let i = 0; i < subplanes.length ; i++ ){
+		subplanes[i].pause();
+	}
+	paused = true;
+}
+
+	/* resume: void
+	 * Resumes all animation of subplanes.
+	 */
+function resume(){
+	for( let i = 0; i < subplanes.length ; i++ ){
+		subplanes[i].resume();
+	}
+	paused = false;
+}
+
+/* **** 3. Setter Functions **********************************************
+	/* set_sliding_duration: void
+	 * sets sliding duration, which is time sliding takes to completely done.
+	 * If negative value came in, WindowManager.WINDOW_ANIMATION_TIME is used.
+	 *
+	 * duration: double	: sliding duration.
+	 */
+function set_sliding_duration( duration ){
+	if( duration < 0 )
+		sliding_duration = WindowManager.WINDOW_ANIMATION_TIME;
+	else
+		sliding_duration = duration;
+}
+
+	/* configure_plane_size: void
+	 * Updates screen size and offset according to global.stage size and current
+	 * index of workspace.
+	 */
+function configure_plane_size(){
+	plane_width = global.stage.width;
+	configure_plane_height();
+	configure_plane_offset();
+}
+
+	/* configure_plane_height: void
+	 * updates plane height, according to workspace count and sliding height.
+	 */
+function configure_plane_height(){
+	plane_height =	((workspace_indexer.workspace_count - 1)	*
+					 sliding_height )							+
+					global.stage.height;
+	for( let i in subplanes )
+		subplanes[i].set_size( plane_width, plane_height );
+}
+
+	/* configure_plane_offset: void
+	 * Animates plane to slide up or down, according to current workspace index
+	 * and sliding height.
+	 */
+function configure_plane_offset(){
+	plane_offset = 	workspace_indexer.workspace_index * sliding_height;
+	
+	if( wrap_plane != null ){
+		let anim_param = { time:		sliding_duration,
+						   transition:	'easeOutQuad',
+						   onComplete:	_sh_switch_workspace_tween_completed,
+						   y: -(plane_offset) };
+	
+		Tweener.addTween( wrap_plane, anim_param );
+		Tweener.addTween( wrap_plane_clone, anim_param );
+	}
+}
+
+/* **** 4. Signal handlers. ***************************************************/
 
 	/* _sh_settings_changed: void
 	 * When setting has changed, it will update actorwrap.
@@ -264,7 +387,7 @@ function _sh_screensize_changed( screen, pspec ){
 function _sh_workspace_count_changed( windexer, count ){
 	plane_height = global.stage.height +
 		( (count - 1) * sliding_height );
-	for( var i = 0; i < subplanes.length; i++ )
+	for( let i in subplanes )
 		subplanes[i].set_size( plane_width, plane_height );
 }
 
@@ -306,121 +429,7 @@ function set_sliding_height( height ){
 	}
 }
 
-	/* set_sliding_duration: void
-	 * sets sliding duration, which is time sliding takes to completely done.
-	 * If negative value came in, WindowManager.WINDOW_ANIMATION_TIME is used.
-	 *
-	 * duration: double	: sliding duration.
-	 */
-function set_sliding_duration( duration ){
-	if( duration < 0 )
-		sliding_duration = WindowManager.WINDOW_ANIMATION_TIME;
-	else
-		sliding_duration = duration;
-}
-
-	/* configure_plane_size: void
-	 * Updates screen size and offset according to global.stage size and current
-	 * index of workspace.
-	 */
-function configure_plane_size(){
-	plane_width = global.stage.width;
-	configure_plane_height();
-	configure_plane_offset();
-}
-
-	/* configure_plane_height: void
-	 * updates plane height, according to workspace count and sliding height.
-	 */
-function configure_plane_height(){
-	plane_height =	((workspace_indexer.workspace_count - 1)	*
-					 sliding_height )							+
-					global.stage.height;
-	for( var i = 0; i < subplanes.length; i++ )
-		subplanes[i].set_size( plane_width, plane_height );
-}
-
-	/* configure_plane_offset: void
-	 * Animates plane to slide up or down, according to current workspace index
-	 * and sliding height.
-	 */
-function configure_plane_offset(){
-	plane_offset = 	workspace_indexer.workspace_index * sliding_height;
-	
-	if( wrap_plane != null ){
-		let anim_param = { time:		sliding_duration,
-						   transition:	'easeOutQuad',
-						   onComplete:	_sh_switch_workspace_tween_completed,
-						   y: -(plane_offset) };
-	
-		Tweener.addTween( wrap_plane, anim_param );
-		Tweener.addTween( wrap_plane_clone, anim_param );
-	}
-}
-
-/* **** 2. Public functions to add or remove actor to wrap. *******************/
-	/* add_actor: void
-	 * Adds actor to wrap.
-	 * Added actor will be resized according to screen size, count of workspaces.
-	 *
-	 * actor: Clutter.Actor:	Actor to be managed.
-	 */
-function add_actor( actor ){
-	wrap_plane.add_actor( actor );
-}
-
-	/* remove_actor: void
-	 * Removes actor being wrapped.
-	 *
-	 * actor: Clutter.Actor:	Actor to be removed.
-	 */
-function remove_actor( actor ){
-	wrap_plane.remove_actor( actor );
-}
-
-	/* add_plane: void
-	 * Adds plane to wrap.
-	 *
-	 * plane: PelletPlane:	Plane to be managed.
-	 */
-function add_plane( plane ){
-	subplanes.push( plane );
-	wrap_plane.add_actor( plane.actor );
-	plane.set_size( plane_width, plane_height );
-}
-
-	/* remove_plane: void
-	 * Removes plane to wrap.
-	 *
-	 * plane: PelletPlane: Plane to be removed.
-	 */
-function remove_plane( plane ){
-	subplanes.pop( plane );
-	wrap_plane.remove_actor( plane.actor );
-}
-
-	/* pause: void
-	 * Pauses all animation of subplanes.
-	 */
-function pause(){
-	for( let i = 0; i < subplanes.length ; i++ ){
-		subplanes[i].pause();
-	}
-	paused = true;
-}
-
-	/* resume: void
-	 * Resumes all animation of subplanes.
-	 */
-function resume(){
-	for( let i = 0; i < subplanes.length ; i++ ){
-		subplanes[i].resume();
-	}
-	paused = false;
-}
-
-
-/* **** 3. Classes ************************************************************/
+/* **** 5. Classes ************************************************************/
 
 	/* MaximizeDetector: object
 	 * Detects if the windows has been maximized and emits signals.
@@ -679,6 +688,8 @@ WorkspaceIndexer.prototype = {
 	//	int _shid_switched		: signal handler for switch-workspace.
 	
 	_init: function(){
+		this.workspace_count = global.screen.get_n_workspaces();
+		this.workspace_index = global.screen.get_active_workspace_index();
 	},
 	
 		/* connect_signals_to: void

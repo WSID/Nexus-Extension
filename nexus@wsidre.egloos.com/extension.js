@@ -42,8 +42,8 @@ function init(metadata) {
 	 * Starts the extension to work.
 	 */
 function enable() {
-	if( SETTING_SCHEMA in Gio.Settings.list_schemas() )
-		settings = new Gio.Settings({ schema: 'org.gnome.shell.extensions.nexus' });
+	if( check_schema() )
+		settings = new Gio.Settings({ schema: SETTING_SCHEMA });
 	else
 		settings = InlineSettings.PLANE_SETTINGS;
 	
@@ -61,4 +61,17 @@ function enable() {
 function disable() {
 	pellet_plane.stop();
 	ActorWrap.unsetup();
+}
+
+	/* check_schema: bool
+	 * Checks if settings schema is installed properly and return result.
+	 *
+	 * Returns: whether settings schema is installed.
+	 */
+function check_schema(){
+	var schema_list = Gio.Settings.list_schemas();
+	for( var i in schema_list ){
+		if( schema_list[i] == SETTING_SCHEMA ) return true;
+	}
+	return false;
 }

@@ -24,7 +24,7 @@ Pool.prototype = {
 		this._capacity = capacity;
 		this._item_count = 0;
 	
-		for( let i in this._array ){
+		for( let i = 0; i < this._array.length ; i++ ){
 			this._array[i] = new obj_constructor( );// construct pool objects.
 			this._array[i]._pool_index = i;			// record pool index on obj.
 		}

@@ -71,12 +71,10 @@ PelletPlane.prototype = {
 	//	_started: bool
 	//	_paused: bool
 	//Signal Handlers' IDs
-	//	_sigid_screen_change_width: uint
-	//	_sigid_screen_change_height: uint
 	//	_srcid_spawning: uint
 	//	_srcid_stepping: uint
-	//	_sigid_settings: uint
-	//	_sigid_pellet_settings: uint
+	//	_shid_settings: uint
+	//	_shid_pellet_settings: uint
 	
 	_init: function( settings ){
 		// Initialize actors
@@ -96,13 +94,13 @@ PelletPlane.prototype = {
 		this._pellet_srcs = new Array();
 		
 		// Connect signal to _settings
-		this._sigid_settings =
+		this._shid_settings =
 			this._settings.connect('changed',
-				this.sigh_plane_settings_changed.bind( this ) );
+				this._sh_plane_settings_changed.bind( this ) );
 		
-		this._sigid_pellet_settings =
+		this._shid_pellet_settings =
 			this._pellet_settings.connect('changed',
-				this.sigh_pellet_settings_changed.bind( this ) );
+				this._sh_pellet_settings_changed.bind( this ) );
 		
 		// Set pellet parameters from settings
 		this.set_pellet_speed.apply( this,
@@ -443,12 +441,12 @@ PelletPlane.prototype = {
 		 * Applying new size on position setting part.
 		 */
 	config_pellet_position: function(){
-		if( this.swidth != undefined &&
-			this.sheight != undefined &&
-			this.pellet_width != undefined ){
+		if( (this.swidth != undefined) &&
+			(this.sheight != undefined) &&
+			(this.pellet_width != undefined) ){
 			
-			this.xindexe = Math.ceil(this.swidth / this.pellet_width);
-			this.yindexe = Math.ceil(this.sheight / this.pellet_width );
+			this._xindexe = Math.ceil(this.swidth / this.pellet_width );
+			this._yindexe = Math.ceil(this.sheight / this.pellet_width );
 		}
 	},
 	
@@ -495,7 +493,7 @@ PelletPlane.prototype = {
 	},
 	
 	/* **** 4. Signal Handlers ************************************************/
-	sigh_plane_settings_changed: function( settings, key ){
+	_sh_plane_settings_changed: function( settings, key ){
 		switch( key ){
 		case 'offset':
 			this.set_offset.apply( this,
@@ -522,7 +520,7 @@ PelletPlane.prototype = {
 		this._pellet_settings.sync();
 	},
 	
-	sigh_pellet_settings_changed: function( settings, key ){
+	_sh_pellet_settings_changed: function( settings, key ){
 		switch( key ){
 		case 'colors':
 			this.set_pellet_colors( settings.get_strv( key ) );
@@ -599,7 +597,7 @@ PelletPlane.prototype = {
 			switch( rand_dir ){
 			case Direction.LEFT:
 				rand_pos = this.index_2_pos(
-					GLib.random_int_range(0, this.xindexe) );
+					GLib.random_int_range(0, this._xindexe) );
 				spawnee._step_x = -rand_spd;
 				spawnee._step_y = 0;
 				spawnee.actor.x = this.swidth + this.pellet_glow_radius;
@@ -607,7 +605,7 @@ PelletPlane.prototype = {
 				break;
 			case Direction.RIGHT:
 				rand_pos = this.index_2_pos(
-					GLib.random_int_range(0, this.xindexe) );
+					GLib.random_int_range(0, this._xindexe) );
 				spawnee._step_x = rand_spd;
 				spawnee._step_y = 0;
 				spawnee.actor.x = -this.pellet_glow_radius;
@@ -615,7 +613,7 @@ PelletPlane.prototype = {
 				break;
 			case Direction.UP:
 				rand_pos = this.index_2_pos(
-					GLib.random_int_range(0, this.yindexe) );
+					GLib.random_int_range(0, this._yindexe) );
 				spawnee._step_x = 0;
 				spawnee._step_y = -rand_spd;
 				spawnee.actor.x = rand_pos;
@@ -623,7 +621,7 @@ PelletPlane.prototype = {
 				break;
 			case Direction.DOWN:
 				rand_pos = this.index_2_pos(
-					GLib.random_int_range(0, this.yindexe) );
+					GLib.random_int_range(0, this._yindexe) );
 				spawnee._step_x = 0;
 				spawnee._step_y = rand_spd;
 				spawnee.actor.x = rand_pos;
