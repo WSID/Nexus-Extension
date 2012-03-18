@@ -1,3 +1,23 @@
+0.6에서의 변경점
+ * parameter들을 정리하고 이름을 변경했습니다.
+    판 관련된 parameter들은 "org.gnome.shell.extensions.nexus"에 머뭅니다.
+    알갱이 관련 parameter들은 이름 앞에 붙은 "pellet-"이 빠지고,
+    	"org.gnome.shell.extensions.nexus.pellet"에 이동되었습니다.
+ * 사용자가 직접 편집할 수 있는 InlineSettings 모듈이 추가되었습니다.
+    GSettings의 사용을 잠시 피하기 위해 추가되었습니다.
+ * 알갱이 판이 작업 화면을 전환함에 따라 미끄러져 올라가거나 내려갑니다.
+    "sliding-duration", "sliding-height" parameter가
+    	"org.gnome.shell.extensions.nexus"에 추가되었습니다.
+    WorkspaceIndexer prototype이 추가되었습니다.
+ * 어떤 창이든 최대화 되어있으면, 확장은 작동을 멈춥니다..
+    또한 두 창이 각각 왼쪽, 오른쪽에 타일 되어있을 경우, 확장은 작동을 멈춥니다.
+    MaximizeDetector prototype이 추가되었습니다.
+ * PelletSource는 Clutter.CairoTexture를 사용하지 않고 St.DrawingArea를 사용합니다
+    Binging의 문제때문입니다.
+ * WSID가 군대에 갑니다.. o_o...
+    이게 제 손에서 나오는 마지막 버전일 겁니다.
+    대한민국 남성에겐 이건 의무에요..
+
 0.5에서의 변경점
  * 유지 보수의 편의를 위해 내부 구조를 변경했습니다.
     PelletPlane 프로토타입을 추가하였습니다.

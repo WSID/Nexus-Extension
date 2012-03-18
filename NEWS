@@ -1,3 +1,25 @@
+Changes in 0.6
+ * Renamed and organized parameters.
+    Plane related parameters are just renamed, staying
+    	"org.gnome.shell.extensions.nexus".
+    Pellet related parameters are moved in
+    	"org.gnome.shell.extensions.nexus.pellet", removing "pellet-" prefix.
+ * Added InlineSettings module, which can be edited by user.
+    It is just for avoding using GSettings for a moment.
+ * Pellet plane will slide when switching bwtween workspaces.
+    Added parameter "sliding-duration", "sliding-height" in
+    	"org.gnome.shell.extensions.nexus".
+    Added WorkspaceIndexer prototype in ActorWrap module.
+ * When any of windows is maximized, extension will stop its animation.
+    Also, if two window is tiled, one at left and the other at right, extension
+    	will stop too.
+    Added MaximizeDetector prototype in ActorWrap module.
+ * PelletSources use St.DrawingArea instead of Clutter.CairoTexture.
+    It is just because of binding problem.
+ * WSID join the army. o_o...
+    This version may be the last version from my hand.
+    To most of South Korean man, its mandatory.
+
 Changes in 0.5
  * Change in internal structure for maintainance convenience.
     Added PelletPlane prototype.

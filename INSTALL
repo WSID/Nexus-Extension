@@ -1,28 +1,26 @@
-# This extension is gnome shell extension. However, this extension uses
-# gsettings, so some more steps are needed.
-#
 # 1. Install extension
 # Put the extension in extension folder.
 # If you want install this for all users (globally), change latter path into
 # /usr/share/gnome-shell/extensions/
 
+echo "Installing extension files."
 cp -R nexus@wsidre.egloos.com/ ~/.local/share/gnome-shell/extensions/
 
 # 2. Install gsettings schema
-# Proper schema file is needed to be installed properly.
+# Currently, installing schema file is optional and you can edit
+# inlinesettings.js for customization. But if you install schema, you can
+# customize it via dconf-editor while it is running.
 
+echo "Installing schema file."
 sudo cp schemas/org.gnome.shell.extensions.nexus.gschema.xml \
 	/usr/share/glib-2.0/schemas
 
 # After you put the schema file, compile schema files.
-
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas
 
 # 2. Extension activation
 # In gnome shell 3.2.x, You should activate it via gnome-tweak-tool after
-# installing it and restarting gnome shell. And you can see it working when you
-# put your mouse on message tray or etcs.
-# See README.
+# installing it and restarting gnome shell.
 #
 # If you are smart, you would find this file can be executed and will install
 # the extension. And you may want to run below code.
