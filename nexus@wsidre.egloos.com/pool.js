@@ -8,62 +8,55 @@
  *		3. Pool object iteration
  */
 
-//As it uses core operations, functions, objects,  no import.
+//As it uses only builtin operations, functions, objects,  no import.
 
 function Pool( capacity, obj_constructor ){
 	this._init( capacity, obj_constructor );
 }
 
 Pool.prototype = {
-	//_capacity:		int
-	//_array:		anything[]
-	//_item_count:	int
+	// Instance Variables
+	//	_capacity: int
+	//	_array: Array
+	//	_item_count: int
 	_init: function( capacity, obj_constructor ){
 		this._array = new Array( capacity );
 		this._capacity = capacity;
 		this._item_count = 0;
 	
-		for( var i = 0; i < this._capacity ; i++ ){
-			this._array[i] = new obj_constructor( );	//<- construct pool objects.
-			this._array[i]._pool_index = i;			//<- record pool index on obj.
+		for( let i in this._array ){
+			this._array[i] = new obj_constructor( );// construct pool objects.
+			this._array[i]._pool_index = i;			// record pool index on obj.
 		}
 	},
 	/* **** 2. Retriving and recycling objects	***** */
 
-		/** retrive: object?
-		 * Retrive an object from pool. If no object is idle, null will be returned.
+		/** retrive: object
+		 * Retrive an object from pool. If no object is idle, null will be
+		 * returned.
 		 *
-		 * Returns:	object{
-		 *				_pool_index:	int:	Index of object given from
-		 *										pool_initialize(). Don't modify.
-		 *			}
-		 *								:		(If some object is availiable)
-		 *										an object from pool.
-		 *			null:						(None of them is abailiable)
+		 * Returns: object	: one of usable object. If no object is availiable,
+		 *					  null.
 		 */
 	retrive: function( ){
 		var res;
 	
-		if( this._item_count < this._capacity ){
+		if( this._item_count < this._capacity )
 			res = this._array[ this._item_count++ ];
-		}
-		else res =  null;
+		else
+			res =  null;
 	
 		return res;
 	},
 
-		/** retrive_more: object[]?
-		 * Retrive more than an object from pool. Returned objects will be contained
-		 * in an array. If not enough objects are availiable, null will be returned.
+		/** retrive_more: Array
+		 * Retrive more than an object from pool. Returned objects will be
+		 * contained in an array. If not enough objects are availiable, null
+		 * will be returned.
 		 *
-		 * n:		int:						Number of required objects.
-		 * Returns:	object{
-		 *				_pool_index:	int:	Index of object given from
-		 *										pool_initialize(). Don't modify.
-		 *			} []
-		 *								:		(If enough objects are availiable)
-		 *										an object from pool.
-		 *			null:						(None of them is abailiable)
+		 * n: int: Number of required objects.
+		 *
+		 * Returns: objects from pool, if they are availiable. Otherwise, null.
 		 */
 	retrive_more: function( n ){
 
@@ -72,7 +65,6 @@ Pool.prototype = {
 		if( this._item_count + n <= this._capacity ){
 			res = this._array.slice( this._item_count, this._item_count + n );
 			this._item_count += n;
-			//global.log('  pool_item_count increased.');
 		}
 		else res =  null;
 	
@@ -80,23 +72,19 @@ Pool.prototype = {
 	},
 
 		/** recycle: void
-		 * Recycle the object into pool. Object should be retrived from the pool.
+		 * Recycle the object into pool. Object should be retrived from the pool
 		 *
-		 * obj:	object{
-		 *			_pool_index:	int:	Index of object given from
-		 *									pool_initialize().
-		 *		}
-		 *							:		Object from pool.
+		 * obj: object	: Object from pool.
 		 */
 	recycle: function( obj ){
-	
+		
 		this._item_count--;
 		if( obj._pool_index != this._item_count ){
 			this._array[ this._item_count ]._pool_index = obj._pool_index;
-	
+			
 			this._array[ obj._pool_index ] = this._array[ this._item_count ];
 			this._array[ this._item_count ] = obj;
-		
+			
 			obj._pool_index = this._item_count;
 		}
 	
@@ -107,11 +95,7 @@ Pool.prototype = {
 		/** foreach: void
 		 * do callback() on using objects. - not on idle objects.
 		 *
-		 * callback:	function( object{
-		 *							_pool_index:	Index of object given from
-		 *											pool_initialize(). Don't modify.
-		 *				} )
-		 *				:							Callback to do on every object.
+		 * callback: void function( object )	: Callback to do on every object
 		 */
 	foreach: function( callback ){
 		for( let i = 0; i < this._item_count ; i++ ){
@@ -120,30 +104,22 @@ Pool.prototype = {
 	},
 
 		/** foreach_full: void
-		 * do callback() on every objects in the pool. - callback will be applied on
-		 * idle objects.
+		 * do callback() on every objects in the pool. - callback will be
+		 * applied on idle objects.
 		 *
-		 * callback:	function( object{
-		 *							_pool_index:	Index of object given from
-		 *											pool_initialize(). Don't modify.
-		 *				} )
-		 *				:							Callback to do on every object.
+		 * callback: void function( object )	: Callback to do on every object
 		 */
 	foreach_full: function( callback ){
-		for( let i = 0; i < this._capacity ; i++ ){
+		for( let i in this._array ){
 			callback( this._array[i] );
 		}
 	},
 
 		/** recycle_if: void
-		 * do callback() on every objects in the pool and recycle objects with result
-		 * of false.
+		 * do callback() on every objects in the pool and recycle objects with
+		 * result of false.
 		 *
-		 * callback:	function( object{
-		 *							_pool_index:	Index of object given from
-		 *											pool_initialize(). Don't modify.
-		 *				} ): bool:
-		 *				:							Callback to do on every object.
+		 * callback: bool function( object )	: Callback to do on every object
 		 */
 	recycle_if: function( callback ){
 		var i = 0;

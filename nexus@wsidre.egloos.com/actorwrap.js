@@ -13,12 +13,13 @@
 
 const Lang = imports.lang;
 const Signals = imports.signals;
-const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
-const WindowManager = imports.ui.windowManager;
 
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
+
+const Main = imports.ui.main;
+const Tweener = imports.ui.tweener;
+const WindowManager = imports.ui.windowManager;
 
 const Ext = imports.ui.extensionSystem.extensions['nexus@wsidre.egloos.com'];
 
@@ -32,7 +33,7 @@ var subplanes;
 var wrap_plane;
 var wrap_plane_clone;
 
-// Landmark from gnome shell
+// Important actors from gnome shell
 var background_plane;
 var overview_plane;
 
@@ -59,42 +60,30 @@ var paused_preserve;
 var in_overview;
 
 // Plane size
-// TODO: Change their name.
 var plane_width;
 var plane_height;
 var plane_offset;
 
+// Setting values
 var sliding_height;
-
 var sliding_duration;
-
-
-var shellwm = Main.wm._shellwm;
 
 /* **** 1. Core functions. ****************************************************/
 
 	/* setup: void
 	 * Initialize actor wrapper */
 function setup( settings ){
-	sliding_height = settings.get_double('sliding-height');
-	let sliding_duration_msec = settings.get_int('sliding-duration');
-	
-	if( sliding_duration_msec <= 0 )
-		sliding_duration = WindowManager.WINDOW_ANIMATION_TIME;
-	else
-		sliding_duration = sliding_duration_msec / 1000.0;
-	
-	/* Initializes subplanes and actors */
+	// Initializes subplanes and actors.
 	subplanes = new Array();
 	
 	wrap_plane = new Clutter.Group();
 	wrap_plane_clone = new Clutter.Clone( {source:wrap_plane } );
 	
-	/* locate background and overview actor in UI hierarchy */
+	// locate background and overview actor in UI hierarchy.
 	background_plane = global.background_actor;
 	overview_plane = Main.overview._background;
 	
-	/* Add plane actor in UI hierarchy */
+	// Add plane actor in UI hierarchy.
 	background_plane.get_parent().add_actor(wrap_plane);
 	wrap_plane.raise( background_plane );
 	
@@ -102,17 +91,12 @@ function setup( settings ){
 	wrap_plane_clone.raise( overview_plane );
 	wrap_plane_clone.visible = false;
 	
-	/* Initializes detectors */
+	// Initializes detectors.
 	maximized_detector = new MaximizeDetector();
 	workspace_indexer = new WorkspaceIndexer()
 	
-	in_overview = false;
-	configure_plane_size();
 	
-	/* Connects signals */
-		/* When we pick or maximize window, wrap_plane goes over windows.
-		 * Therefore, we should take measure to put it under windows. */
-	_shid_restacked = global.screen.connect("restacked", _sh_wrap_plane_lower );
+	/* Monkey Patch function and Connects signals */
 		
 		/* Monkey Patching Main.wm._switchWorkspaceDone() to add some statement,
 		 * as wrap_plane tends to raise above windows after switching work-
@@ -124,10 +108,10 @@ function setup( settings ){
 		_sh_wrap_plane_lower();
 	}
 	
+		/* When we pick or maximize window, wrap_plane goes over windows.
+		 * Therefore, we should take measure to put it under windows. */
+	_shid_restacked = global.screen.connect("restacked", _sh_wrap_plane_lower );
 	
-		/* Connect Signal handlers for wrap_plane_clone to show and
-		 * hide at right timing.
-		 */
 	_shid_showing = Main.overview.connect("showing", _sh_overview_showing );
 	_shid_hidden = Main.overview.connect("hidden", _sh_overview_hidden );
 	
@@ -141,21 +125,30 @@ function setup( settings ){
 	
 	_shid_screensize_change = global.stage.connect('notify::allocation', _sh_screensize_changed );
 	
-	/* initialize maximized_detector */
+	// ready maximized_detector for current workspace.
 	maximized_detector.set_from_workspace(
 		global.screen.get_workspace_by_index(
 			global.screen.get_active_workspace_index() ) );
+	
+	// retrive setting value from settings object.
+	set_sliding_height( settings.get_double('sliding-height') );
+	set_sliding_duration( settings.get_int('sliding-duration') / 1000.0 );
+	
+	in_overview = false;
+	configure_plane_size();
 	is_setup = true;
 }
 
 function unsetup( ){
 	if( is_setup ){
 		
-		/* revert monkey patched function */
+		// revert monkey patched function.
 		Main.wm._switchWorkspaceDone = Main.wm._switchWorkspaceDone_orig__nexus;
 		delete Main.wm._switchWorkspaceDone_orig__nexus;
 		
-		/* disconnect signals */
+		// disconnect signals.
+		global.stage.disconnect( _shid_screensize_change );
+		
 		workspace_indexer.disconnect( _shid_workspace_count_change );
 		workspace_indexer.disconnect( _shid_switch_workspace );
 		workspace_indexer.disconnect_signals();
@@ -164,24 +157,22 @@ function unsetup( ){
 		maximized_detector.disconnect( _shid_unmaximized );
 		maximized_detector.disconnect_signals();
 		
-		global.stage.disconnect( _shid_screensize_change );
-		
 		Main.overview.disconnect( _shid_showing );
 		Main.overview.disconnect( _shid_hidden );
 		global.screen.disconnect( _shid_restacked );
 		
-		/* remove UI hierarchy */
+		// remove UI hierarchy.
 		wrap_plane.get_parent().remove_actor( wrap_plane );
 		wrap_plane_clone.get_parent().remove_actor( wrap_plane_clone );
 		
-		/* remove all planes and actors */
+		// remove all planes and actors.
 		for( let a = 0; a < wrap_plane.get_children().length; a++ ){
 			wrap_plane.remove_actor( wrap_plane.get_children()[a] );
 		}
 		wrap_plane = null;
 		wrap_plane_clone = null;
 
-		//Releasing external ref
+		// Releasing external ref
 		overview_plane = null;
 		background_plane = null;
 		is_setup = false;
@@ -300,16 +291,35 @@ function _sh_switch_workspace_tween_completed( ){
 	Tweener.removeTweens( this );
 }
 
+	/* set_sliding_height: void
+	 * sets sliding height, which is amount of sliding distance per one
+	 * workspace when switching workspace.
+	 * Non-negative values are allowed.
+	 *
+	 * height: double	: sliding height.
+	 */
 function set_sliding_height( height ){
-	sliding_height = height;
-	configure_plane_offset();
-	configure_plane_height();
-}
-function set_sliding_duration( duration ){
-	sliding_duration = duration;
+	if( height >= 0 ){
+		sliding_height = height;
+		configure_plane_offset();
+		configure_plane_height();
+	}
 }
 
-	/* calculate_ssize: void
+	/* set_sliding_duration: void
+	 * sets sliding duration, which is time sliding takes to completely done.
+	 * If negative value came in, WindowManager.WINDOW_ANIMATION_TIME is used.
+	 *
+	 * duration: double	: sliding duration.
+	 */
+function set_sliding_duration( duration ){
+	if( duration < 0 )
+		sliding_duration = WindowManager.WINDOW_ANIMATION_TIME;
+	else
+		sliding_duration = duration;
+}
+
+	/* configure_plane_size: void
 	 * Updates screen size and offset according to global.stage size and current
 	 * index of workspace.
 	 */
@@ -319,6 +329,9 @@ function configure_plane_size(){
 	configure_plane_offset();
 }
 
+	/* configure_plane_height: void
+	 * updates plane height, according to workspace count and sliding height.
+	 */
 function configure_plane_height(){
 	plane_height =	((workspace_indexer.workspace_count - 1)	*
 					 sliding_height )							+
@@ -327,6 +340,10 @@ function configure_plane_height(){
 		subplanes[i].set_size( plane_width, plane_height );
 }
 
+	/* configure_plane_offset: void
+	 * Animates plane to slide up or down, according to current workspace index
+	 * and sliding height.
+	 */
 function configure_plane_offset(){
 	plane_offset = 	workspace_indexer.workspace_index * sliding_height;
 	
@@ -574,7 +591,7 @@ MaximizeDetector.prototype = {
 		let old_maximized = this.maximized;
 		this.maximized = ( this.maximized_list.length != 0 ) ||
 						 ( ( this.lefttiled_list.length != 0 ) &&
-						   ( this.righttiled_list.length != 0 )   );
+						   ( this.righttiled_list.length != 0 ) );
 		
 		if( ( !old_maximized ) && ( this.maximized ) )
 			this.emit("maximized")
@@ -583,33 +600,21 @@ MaximizeDetector.prototype = {
 	},
 	
 	/* **** Signal handlers ***************************************************/
-	
-		// Connected to Main.wm._shellwm - minimize
 	_sh_minimize: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
-	
-		// Connected to Main.wm._shellwm - maximize
 	_sh_maximize: function( shellwm, actor ){
 		this.add_window( actor.meta_window );
 	},
-	
-		// Connected to Main.wm._shellwm - unmaximize
 	_sh_unmaximize: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
-	
-		// Connected to Main.wm._shellwm - map
 	_sh_map: function( shellwm, actor ){
 		this.add_window( actor.meta_window );
 	},
-	
-		// Connected to Main.wm._shellwm - destroy
 	_sh_destroy: function( shellwm, actor ){
 		this.remove_window( actor.meta_window );
 	},
-	
-		// Connected to Main.wm._shellwm - switch-workspace
 	_sh_switch_workspace: function( shellwm, from, to, direction ){
 		this.set_from_workspace( global.screen.get_workspace_by_index( to ) );
 	},

@@ -79,22 +79,14 @@ PelletPlane.prototype = {
 	//	_sigid_pellet_settings: uint
 	
 	_init: function( settings ){
-		//Initialize actors
+		// Initialize actors
 		this.actor = new Clutter.Group();
 		
-		//Initialize _settings
+		// Initialize _settings
 		this._settings = settings;
 		this._pellet_settings = settings.get_child( 'pellet' );
 		
-		this._sigid_settings =
-			this._settings.connect('changed',
-				this.sigh_plane_settings_changed.bind( this ) );
-		
-		this._sigid_pellet_settings =
-			this._pellet_settings.connect('changed',
-				this.sigh_pellet_settings_changed.bind( this ) );
-		
-		//Initialize _pellet_pool and _pellet_srcs
+		// Initialize _pellet_pool and _pellet_srcs
 		this.pool_capacity = settings.get_int('pool-capacity');
 		this._pellet_pool = new Pool.Pool( this.pool_capacity, Pellet.Pellet );
 		this._pellet_pool.foreach_full( Lang.bind(this, function( obj ){
@@ -103,7 +95,16 @@ PelletPlane.prototype = {
 		} ) );
 		this._pellet_srcs = new Array();
 		
-		//Set pellet parameters from settings
+		// Connect signal to _settings
+		this._sigid_settings =
+			this._settings.connect('changed',
+				this.sigh_plane_settings_changed.bind( this ) );
+		
+		this._sigid_pellet_settings =
+			this._pellet_settings.connect('changed',
+				this.sigh_pellet_settings_changed.bind( this ) );
+		
+		// Set pellet parameters from settings
 		this.set_pellet_speed.apply( this,
 			settings.get_value('speed').deep_unpack() );
 		
@@ -145,6 +146,7 @@ PelletPlane.prototype = {
 			}
 			this.actor.visible = true;
 			
+			//When actor has parent actor, set color here.
 			if( this._is_postponed_color_init )
 				this.set_pellet_colors(this.pellet_colors);
 			
@@ -309,22 +311,24 @@ PelletPlane.prototype = {
 	set_pellet_colors: function( colors ){
 	
 		this.pellet_colors = colors;
+		//When actor has no parent, setting color would cause crush.
 		if( this.actor.get_parent() == null ){
 			this._is_postponed_color_init = true;
 			return;
 		}
-			//If count of the color is decreased,
-			// drop some of pellet sources to have same count of it.
+		
+		//If count of the color is decreased,
+		// drop some of pellet sources to have same count of it.
 		if( colors.length < this._pellet_srcs.length )
 			this._pellet_srcs.splice( colors.length,
 									  this._pellet_srcs.length - colors.length);
 
-			//Setting color of pellet sources.
+		//Setting color of pellet sources.
 		for( let i in this._pellet_srcs )
 			this._pellet_srcs[i].set_color( colors[i] );
 		
-			//If count of the color is increased,
-			// add new pellet sources to have same count of it.
+		//If count of the color is increased,
+		// add new pellet sources to have same count of it.
 		for( let i = this._pellet_srcs.length ; i < colors.length; i++ ){
 			let pellet_src =
 				new Pellet.PelletSource(this.pellet_width,
@@ -334,7 +338,7 @@ PelletPlane.prototype = {
 										this.pellet_default_alpha );
 			this._pellet_srcs.push( pellet_src );
 			
-				//Add pellet source to realize it.
+			//Add pellet source to realize it.
 			this.actor.add_actor( pellet_src.actor );
 			pellet_src.queue_repaint();
 			pellet_src.actor.visible = false;

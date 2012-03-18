@@ -2,6 +2,9 @@
  * Hardcoded settings that can be edited by editing this js file.
  * This is used when schema wasn't found.
  *
+ * If schema is installed properly, this will not be used. If you installed
+ * schema, set option with 'gsettings' or 'dconf-editor'.
+ *
  * This mimicks a GSettings object, so this can be dropped without lots of code
  * modification.
  *
@@ -12,7 +15,9 @@
 //Include Statements.
 const GLib = imports.gi.GLib;
 
-//Settings values [ Modify here 'u' ]
+/* **** Modify this section. **************************************************/
+
+//Settings values
 const PLANE_SETTINGS_VALUE = {
 	'pool-capacity': 64,
 	'spawn-timeout': 150,
@@ -31,7 +36,9 @@ const PELLET_SETTINGS_VALUE = {
 	'width': 14,
 	'glow-radius': 21 };
 
-//Settings Formats [ DO NOT MODIFY THIS ARRAYS ]
+/* **** DO NOT MODIFY FROM HERE!! *********************************************/
+
+//Settings Formats
 const PLANE_SETTINGS_FORMAT = {
 	'pool-capacity': 'i',
 	'spawn-timeout': 'i',
@@ -73,6 +80,10 @@ InlineSettings.prototype = {
 	},
 	
 		/* get_int: int
+		 * gets int value from given key.
+		 * To mimick GSettings' behavior, result is converted into int.
+		 *
+		 * Return: value from key.
 		 */
 	get_int: function( key ){
 		var value = this.dict[key];
@@ -89,6 +100,12 @@ InlineSettings.prototype = {
 		return null;
 	},
 	
+		/* get_double: double
+		 * gets double value from given key.
+		 * To mimick GSettings' behavior, result is converted into double.
+		 *
+		 * Return: value from key.
+		 */
 	get_double: function( key ){
 		var value = this.dict[key];
 		var type = typeof( value );
@@ -104,6 +121,12 @@ InlineSettings.prototype = {
 		return null;
 	},
 	
+		/* get_strv: Array
+		 * gets Array value from given key.
+		 * For convenience, it only checks result is Array.
+		 *
+		 * Return: value from key.
+		 */
 	get_strv: function( key ){
 		var value = this.dict[key];
 		
@@ -113,24 +136,48 @@ InlineSettings.prototype = {
 			return null;
 	},
 	
+		/* get_value: GLib.Variant
+		 * gets Variant value from given key.
+		 *
+		 * Return: value from key.
+		 */
 	get_value: function( key ){
 		return this.variant_dict[key];
 	},
 	
+		/* connect: int
+		 * just mimicks GObject signal connection. Doing nothing.
+		 *
+		 * Return: always 0, which is originally supposed to be signal handler
+		 *		   id.
+		 */
 	connect: function(){
-		//Dummy Function, doing nothing.
 		return 0;
 	},
 	
+		/* disconnect: void
+		 * just mimicks GObject signal disconnection. Doing nothing.
+		 */
 	disconnect: function(){
-		//Dummy function, doing nothing.
 		return;
 	},
 	
+		/* set_children: void
+		 * sets child InlineSettings with name. for mimicking child schema in
+		 * GSettings.
+		 *
+		 * map: object	: name:string -> child:InlineSettings mapping.
+		 */
 	set_children: function( map ){
 		this.children = map;
 	},
 	
+		/* get_child: InlineSettings
+		 * get child with name.
+		 *
+		 * key: string	: child name.
+		 * Return: child InlineSettings.
+		 */
 	get_child: function( key ){
 		if( 'children' in this ){
 			return this.children[key];
@@ -139,6 +186,7 @@ InlineSettings.prototype = {
 	}
 }
 
+// Constant settings.
 const PLANE_SETTINGS = new InlineSettings( PLANE_SETTINGS_FORMAT,
 										   PLANE_SETTINGS_VALUE );
 const PELLET_SETTINGS = new InlineSettings( PELLET_SETTINGS_FORMAT,
